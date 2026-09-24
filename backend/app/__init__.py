@@ -1,0 +1,1 @@
+"""OmanCare FastAPI app package."""

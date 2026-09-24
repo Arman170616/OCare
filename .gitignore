@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.local
+dist/
+build/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.vscode/
+.idea/
+*.log
+backend/omancare.db
+.git/
