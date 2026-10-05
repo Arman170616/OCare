@@ -3,9 +3,17 @@ import type { ProjectWithDistance } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
 import { DONATION_PRESETS, SPONSOR_PRESETS, SPONSOR_FREQUENCIES, getCategoryInfo } from '@/lib/constants';
-import { formatOMR, getRemainingAmount, facilityTypeLabel } from '@/lib/utils';
+import { formatOMR, getRemainingAmount, facilityTypeLabel, resolveAmount, isValidAmount } from '@/lib/utils';
 import { ProgressBar } from './ProgressBar';
-import { X, Heart, CheckCircle2, Calendar, Repeat, AlertCircle } from 'lucide-react';
+import { Heart, CheckCircle2, Calendar, Repeat } from 'lucide-react';
+import {
+  ModalShell,
+  AmountPicker,
+  DonorFields,
+  FormError,
+  DonationTotal,
+  SubmitButton,
+} from './DonationForm';
 
 interface DonateModalProps {
   project: ProjectWithDistance | null;
@@ -39,13 +47,12 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
   const facility = project.facility;
   const remaining = getRemainingAmount(project);
 
-  const finalAmount =
-    customAmount !== '' ? parseFloat(customAmount) : amount;
+  const finalAmount = resolveAmount(amount, customAmount);
 
   const handleSubmit = async () => {
     setError('');
 
-    if (!finalAmount || finalAmount <= 0 || Number.isNaN(finalAmount)) {
+    if (!isValidAmount(finalAmount)) {
       setError('Please enter a valid donation amount.');
       return;
     }
@@ -134,7 +141,7 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
           </p>
           <button
             onClick={handleClose}
-            className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-xl active:scale-95"
+            className="w-full rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white transition-all active:scale-95"
           >
             Done
           </button>
@@ -148,7 +155,7 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
       <div className="border-b border-slate-200/60 px-6 py-4">
         <div className="flex items-center gap-3">
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} text-white shadow-md`}
+            className={`flex h-10 w-10 items-center justify-center rounded-xl ${cat.tint}`}
           >
             <cat.icon className="h-5 w-5" />
           </div>
@@ -162,7 +169,7 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
         </div>
       </div>
 
-      <div className="max-h-[55vh] overflow-y-auto px-6 py-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
         {facility && (
           <div className="mb-4 flex items-center gap-2 rounded-xl bg-teal-50/70 px-3 py-2 text-xs text-teal-700">
             <span className="font-semibold">{facility.name}</span>
@@ -219,7 +226,7 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
                   onClick={() => setFrequency(freq.key)}
                   className={`rounded-lg px-2 py-2 text-xs font-medium transition-all ${
                     frequency === freq.key
-                      ? 'bg-teal-500 text-white shadow-md'
+                      ? 'bg-teal-500 text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -230,96 +237,29 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
           </div>
         )}
 
-        <div className="mb-4">
-          <label className="mb-2 block text-xs font-semibold text-slate-600">
-            Choose amount {mode === 'sponsor' ? `(per ${frequency === 'weekly' ? 'week' : frequency === 'monthly' ? 'month' : 'payment'})` : ''}
-          </label>
-          <div className="grid grid-cols-5 gap-2">
-            {(mode === 'one-time' ? DONATION_PRESETS : SPONSOR_PRESETS).map((preset) => (
-              <button
-                key={preset}
-                onClick={() => {
-                  setAmount(preset);
-                  setCustomAmount('');
-                }}
-                className={`rounded-lg px-2 py-2.5 text-sm font-bold transition-all ${
-                  customAmount === '' && amount === preset
-                    ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
-          {mode === 'one-time' && (
-            <div className="mt-2">
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">
-                  OMR
-                </span>
-                <input
-                  type="number"
-                  value={customAmount}
-                  onChange={(e) => setCustomAmount(e.target.value)}
-                  placeholder="Custom amount"
-                  className="w-full rounded-lg border border-slate-200 bg-white/70 py-2.5 pl-12 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
-                />
-              </div>
-            </div>
-          )}
-        </div>
+        <AmountPicker
+          label={`Choose amount${mode === 'sponsor' ? ` (per ${frequency === 'weekly' ? 'week' : frequency === 'monthly' ? 'month' : 'payment'})` : ''}`}
+          presets={mode === 'one-time' ? DONATION_PRESETS : SPONSOR_PRESETS}
+          amount={amount}
+          customAmount={customAmount}
+          onPreset={(value) => {
+            setAmount(value);
+            setCustomAmount('');
+          }}
+          onCustomChange={setCustomAmount}
+          allowCustom={mode === 'one-time'}
+        />
 
-        <div className="mb-4 space-y-3">
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-              Your name <span className="font-normal text-slate-400">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={donorName}
-              onChange={(e) => setDonorName(e.target.value)}
-              placeholder="Anonymous donor"
-              className="w-full rounded-lg border border-slate-200 bg-white/70 px-3 py-2.5 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-              Email <span className="font-normal text-slate-400">(for receipt)</span>
-            </label>
-            <input
-              type="email"
-              value={donorEmail}
-              onChange={(e) => setDonorEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="w-full rounded-lg border border-slate-200 bg-white/70 px-3 py-2.5 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
-            />
-          </div>
-        </div>
+        <DonorFields
+          name={donorName}
+          email={donorEmail}
+          onNameChange={setDonorName}
+          onEmailChange={setDonorEmail}
+        />
 
-        {error && (
-          <div className="mb-3 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            {error}
-          </div>
-        )}
-
-        <div className="mb-4 flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-          <span className="text-sm font-medium text-slate-600">Total donation</span>
-          <span className="text-lg font-bold text-teal-600">
-            {formatOMR(finalAmount || 0)}
-          </span>
-        </div>
-
-        <button
-          onClick={handleSubmit}
-          disabled={submitting || !finalAmount}
-          className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-3.5 font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {submitting
-            ? 'Processing...'
-            : `Donate ${formatOMR(finalAmount || 0)}`}
-        </button>
+        <FormError message={error} />
+        <DonationTotal amount={finalAmount} />
+        <SubmitButton amount={finalAmount} submitting={submitting} onClick={handleSubmit} />
 
         <p className="mt-3 text-center text-[10px] text-slate-400">
           {remaining > 0
@@ -328,35 +268,5 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
         </p>
       </div>
     </ModalShell>
-  );
-}
-
-function ModalShell({
-  children,
-  onClose,
-}: {
-  children: React.ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 backdrop-blur-sm sm:items-center"
-      onClick={onClose}
-    >
-      <div
-        className="glass-card max-h-[90vh] w-full max-w-lg overflow-hidden rounded-t-3xl sm:rounded-3xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-end p-2">
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
   );
 }

@@ -21,7 +21,7 @@ export function ProgressBar({ project, showLabels = true }: ProgressBarProps) {
       )}
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200/70">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-teal-400 to-emerald-500 transition-all duration-700 ease-out"
+          className="h-full rounded-full bg-teal-600 transition-all duration-700 ease-out"
           style={{ width: `${percent}%` }}
         />
       </div>

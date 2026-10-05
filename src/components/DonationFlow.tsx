@@ -2,10 +2,19 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
 import type { City, Facility } from '@/lib/types';
-import { formatOMR } from '@/lib/utils';
-import { X, ChevronRight, ChevronLeft, CheckCircle2, MapPin, Building2, Heart, Droplet } from 'lucide-react';
+import { DONATION_PRESETS } from '@/lib/constants';
+import { facilityTypeLabel, resolveAmount, isValidAmount } from '@/lib/utils';
+import { ChevronLeft, ChevronRight, CheckCircle2, MapPin, Droplets, Loader2 } from 'lucide-react';
 import { FacilitySelector } from './FacilitySelector';
 import { DonationTracker } from './DonationTracker';
+import {
+  ModalShell,
+  AmountPicker,
+  DonorFields,
+  FormError,
+  DonationTotal,
+  SubmitButton,
+} from './DonationForm';
 
 interface DonationFlowProps {
   onClose: () => void;
@@ -14,94 +23,67 @@ interface DonationFlowProps {
 
 type Step = 'type' | 'location' | 'facility' | 'amount' | 'tracking';
 
-interface DonationState {
-  type: 'water' | null;
-  city: City | null;
-  facility: Facility | null;
-  amount: number;
-  donorName: string;
-  donorEmail: string;
-  donationId: string;
-  receiptNumber: string;
-}
+const STEPS: { key: Step; label: string }[] = [
+  { key: 'type', label: 'Donation type' },
+  { key: 'location', label: 'Location' },
+  { key: 'facility', label: 'Facility' },
+  { key: 'amount', label: 'Amount' },
+  { key: 'tracking', label: 'Tracking' },
+];
 
 export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
   const { profile } = useAuth();
-  const [currentStep, setCurrentStep] = useState<Step>('type');
+  const [step, setStep] = useState<Step>('type');
   const [cities, setCities] = useState<City[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [customAmount, setCustomAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const [donation, setDonation] = useState<DonationState>({
-    type: null,
-    city: null,
-    facility: null,
-    amount: 100,
-    donorName: profile?.full_name ?? '',
-    donorEmail: profile?.email ?? '',
-    donationId: '',
-    receiptNumber: '',
-  });
+  const [city, setCity] = useState<City | null>(null);
+  const [facility, setFacility] = useState<Facility | null>(null);
+  const [amount, setAmount] = useState<number>(DONATION_PRESETS[1]);
+  const [customAmount, setCustomAmount] = useState('');
+  const [donorName, setDonorName] = useState(profile?.full_name ?? '');
+  const [donorEmail, setDonorEmail] = useState(profile?.email ?? '');
+  const [receipt, setReceipt] = useState<{ id: string; number: string } | null>(null);
 
-  // Load cities on mount
+  const finalAmount = resolveAmount(amount, customAmount);
+  const stepIndex = STEPS.findIndex((s) => s.key === step);
+
   useEffect(() => {
-    const loadCities = async () => {
-      try {
-        setLoading(true);
-        const data = await apiFetch<City[]>('/api/cities');
-        setCities(data || []);
-      } catch (err) {
-        setError('Failed to load cities');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadCities();
+    setLoading(true);
+    apiFetch<City[]>('/api/cities')
+      .then((data) => setCities(data || []))
+      .catch(() => setError('Failed to load cities'))
+      .finally(() => setLoading(false));
   }, []);
 
-  // Load facilities when city is selected
   useEffect(() => {
-    if (donation.city) {
-      const loadFacilities = async () => {
-        try {
-          setLoading(true);
-          const data = await apiFetch<Facility[]>(
-            `/api/facilities?city_id=${donation.city?.id}&types=mosque,hospital`
-          );
-          setFacilities(data || []);
-        } catch (err) {
-          setError('Failed to load facilities');
-          console.error(err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      loadFacilities();
+    if (!city) return;
+    setLoading(true);
+    apiFetch<Facility[]>(`/api/facilities?city_id=${city.id}&types=mosque,hospital`)
+      .then((data) => setFacilities(data || []))
+      .catch(() => setError('Failed to load facilities'))
+      .finally(() => setLoading(false));
+  }, [city]);
+
+  const goTo = (next: Step) => {
+    setError('');
+    setStep(next);
+  };
+
+  const goBack = () => {
+    if (stepIndex > 0 && step !== 'tracking') goTo(STEPS[stepIndex - 1].key);
+  };
+
+  const handleSubmit = async () => {
+    if (!facility) {
+      setError('Please choose a facility.');
+      return;
     }
-  }, [donation.city]);
-
-  const handleSelectType = (type: 'water') => {
-    setDonation((prev) => ({ ...prev, type }));
-    setCurrentStep('location');
-  };
-
-  const handleSelectCity = (city: City) => {
-    setDonation((prev) => ({ ...prev, city, facility: null }));
-    setCurrentStep('facility');
-  };
-
-  const handleSelectFacility = (facility: Facility) => {
-    setDonation((prev) => ({ ...prev, facility }));
-    setCurrentStep('amount');
-  };
-
-  const handleSubmitDonation = async () => {
-    if (!donation.facility || !donation.amount) {
-      setError('Please fill in all required fields');
+    if (!isValidAmount(finalAmount)) {
+      setError('Please enter a valid donation amount.');
       return;
     }
 
@@ -112,11 +94,11 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
       const response = await apiFetch<{ id: string; receipt_number: string }>('/api/donations', {
         method: 'POST',
         body: JSON.stringify({
-          facility_id: donation.facility.id,
+          facility_id: facility.id,
           user_id: profile?.id || 'donor-demo',
-          donor_name: donation.donorName || profile?.full_name || 'Anonymous Donor',
-          donor_email: donation.donorEmail || profile?.email || 'anonymous@omancare.local',
-          amount: parseFloat(customAmount || donation.amount.toString()),
+          donor_name: donorName.trim() || profile?.full_name || 'Anonymous Donor',
+          donor_email: donorEmail.trim() || profile?.email || 'anonymous@omancare.local',
+          amount: finalAmount,
           currency: 'OMR',
           recurring: false,
           frequency: 'one-time',
@@ -124,278 +106,224 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
         }),
       });
 
-      if (response?.id && response?.receipt_number) {
-        setDonation((prev) => ({
-          ...prev,
-          donationId: response.id,
-          receiptNumber: response.receipt_number,
-        }));
-        setCurrentStep('tracking');
-      } else {
-        throw new Error('Invalid donation response');
+      if (!response?.id || !response?.receipt_number) {
+        throw new Error('Donation receipt was not returned');
       }
+      setReceipt({ id: response.id, number: response.receipt_number });
+      goTo('tracking');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to process donation';
-      setError(message);
+      setError(err instanceof Error && err.message ? err.message : 'Donation failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const goBack = () => {
-    switch (currentStep) {
-      case 'location':
-        setCurrentStep('type');
-        break;
-      case 'facility':
-        setCurrentStep('location');
-        break;
-      case 'amount':
-        setCurrentStep('facility');
-        break;
-      case 'tracking':
-        break; // No going back from tracking
-      default:
-        break;
-    }
+  const handleClose = () => {
+    if (receipt) onComplete();
+    onClose();
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-teal-50 to-teal-100 px-6 py-4 border-b border-teal-200 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Water Donation</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Step {currentStep === 'type' ? 1 : currentStep === 'location' ? 2 : currentStep === 'facility' ? 3 : currentStep === 'amount' ? 4 : 5} of 5
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white rounded-lg transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
-          {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Step 1: Select Donation Type */}
-          {currentStep === 'type' && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">What would you like to donate?</h3>
-              <button
-                onClick={() => handleSelectType('water')}
-                className="w-full p-6 border-2 border-teal-200 rounded-lg hover:border-teal-500 hover:bg-teal-50 transition-all group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-teal-100 rounded-lg group-hover:bg-teal-200 transition-colors">
-                    <Droplet className="w-8 h-8 text-teal-600" />
-                  </div>
-                  <div className="text-left">
-                    <h4 className="font-semibold text-gray-900">Water Support</h4>
-                    <p className="text-sm text-gray-600">Provide clean water to mosques and hospitals</p>
-                  </div>
-                </div>
-              </button>
-            </div>
-          )}
-
-          {/* Step 2: Choose Location */}
-          {currentStep === 'location' && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Where would you like to help?</h3>
-              <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                {loading ? (
-                  <div className="col-span-2 text-center py-8 text-gray-500">Loading cities...</div>
-                ) : (
-                  cities.map((city) => (
-                    <button
-                      key={city.id}
-                      onClick={() => handleSelectCity(city)}
-                      className="p-4 border-2 border-gray-200 rounded-lg hover:border-teal-500 hover:bg-teal-50 transition-all text-left group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <MapPin className="w-5 h-5 text-teal-600 group-hover:scale-110 transition-transform" />
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{city.name}</h4>
-                          <p className="text-xs text-gray-500">{city.governorate}</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Find Verified Facilities */}
-          {currentStep === 'facility' && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Select a facility in {donation.city?.name}
-              </h3>
-              <p className="text-sm text-gray-600">Choose a verified mosque or hospital</p>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {loading ? (
-                  <div className="text-center py-8 text-gray-500">Loading facilities...</div>
-                ) : facilities.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">No facilities found in this area</div>
-                ) : (
-                  facilities.map((facility) => (
-                    <FacilitySelector
-                      key={facility.id}
-                      facility={facility}
-                      selected={donation.facility?.id === facility.id}
-                      onClick={() => handleSelectFacility(facility)}
-                    />
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Donation Amount */}
-          {currentStep === 'amount' && (
-            <div className="space-y-6">
-              <div className="p-4 bg-teal-50 rounded-lg">
-                <h4 className="font-semibold text-gray-900 mb-2">Selected Facility</h4>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white rounded-lg">
-                    <Building2 className="w-5 h-5 text-teal-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{donation.facility?.name}</p>
-                    <p className="text-sm text-gray-600">{donation.facility?.address}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Donation Amount</h3>
-
-                <div className="grid grid-cols-3 gap-2">
-                  {[50, 100, 250].map((preset) => (
-                    <button
-                      key={preset}
-                      onClick={() => {
-                        setDonation((prev) => ({ ...prev, amount: preset }));
-                        setCustomAmount('');
-                      }}
-                      className={`p-3 rounded-lg font-semibold transition-all border-2 ${
-                        donation.amount === preset && customAmount === ''
-                          ? 'border-teal-500 bg-teal-50 text-teal-600'
-                          : 'border-gray-200 text-gray-700 hover:border-teal-200'
-                      }`}
-                    >
-                      {formatOMR(preset)}
-                    </button>
-                  ))}
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Custom Amount (OMR)</label>
-                  <input
-                    type="number"
-                    value={customAmount}
-                    onChange={(e) => {
-                      setCustomAmount(e.target.value);
-                      if (e.target.value) setDonation((prev) => ({ ...prev, amount: 0 }));
-                    }}
-                    placeholder="Enter custom amount"
-                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-teal-500"
-                  />
-                </div>
-
-                <div className="pt-4 border-t-2 border-gray-200">
-                  <p className="text-sm text-gray-600 mb-2">Donor Information</p>
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={donation.donorName}
-                      onChange={(e) => setDonation((prev) => ({ ...prev, donorName: e.target.value }))}
-                      placeholder="Your name"
-                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-teal-500 text-sm"
-                    />
-                    <input
-                      type="email"
-                      value={donation.donorEmail}
-                      onChange={(e) => setDonation((prev) => ({ ...prev, donorEmail: e.target.value }))}
-                      placeholder="Your email"
-                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-teal-500 text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: Tracking */}
-          {currentStep === 'tracking' && (
-            <div className="space-y-6">
-              <div className="text-center py-4">
-                <CheckCircle2 className="w-16 h-16 text-teal-600 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Donation Received!</h3>
-                <p className="text-gray-600">Thank you for your generous donation</p>
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Receipt Number</p>
-                <p className="text-lg font-mono font-bold text-gray-900">{donation.receiptNumber}</p>
-              </div>
-
-              <DonationTracker donationId={donation.donationId} />
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex gap-3 justify-between">
-          {currentStep !== 'type' && currentStep !== 'tracking' && (
-            <button
-              onClick={goBack}
-              className="px-6 py-2 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
-            >
-              <ChevronLeft className="w-5 h-5" />
-              Back
-            </button>
-          )}
-
-          {currentStep === 'type' && (
-            <div className="flex-1" />
-          )}
-
-          {currentStep === 'amount' && (
-            <button
-              onClick={handleSubmitDonation}
-              disabled={submitting || !donation.facility}
-              className="ml-auto px-6 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
-            >
-              <Heart className="w-5 h-5" />
-              {submitting ? 'Processing...' : 'Complete Donation'}
-            </button>
-          )}
-
-          {currentStep === 'tracking' && (
-            <button
-              onClick={() => {
-                onComplete();
-                onClose();
-              }}
-              className="ml-auto px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold transition-colors"
-            >
-              Close
-            </button>
-          )}
-        </div>
+  const header = (
+    <>
+      <h2 className="text-base font-bold text-slate-800">Water Donation</h2>
+      <p className="text-xs text-slate-500">
+        Step {stepIndex + 1} of {STEPS.length} · {STEPS[stepIndex].label}
+      </p>
+      <div className="mt-3 flex gap-1">
+        {STEPS.map((s, i) => (
+          <div
+            key={s.key}
+            className={`h-1 flex-1 rounded-full ${i <= stepIndex ? 'bg-teal-600' : 'bg-slate-200'}`}
+          />
+        ))}
       </div>
+    </>
+  );
+
+  return (
+    <ModalShell onClose={handleClose} header={header}>
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-3">
+        {step !== 'type' && step !== 'tracking' && (
+          <button
+            onClick={goBack}
+            className="mb-3 flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </button>
+        )}
+
+        {step === 'type' && (
+          <>
+            <StepTitle>What would you like to donate?</StepTitle>
+            <OptionButton
+              icon={<Droplets className="h-5 w-5" />}
+              title="Water Support"
+              subtitle="Provide clean water to mosques and hospitals"
+              onClick={() => goTo('location')}
+            />
+          </>
+        )}
+
+        {step === 'location' && (
+          <>
+            <StepTitle>Where would you like to help?</StepTitle>
+            {loading ? (
+              <Loading text="Loading cities..." />
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {cities.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      setCity(c);
+                      setFacility(null);
+                      goTo('facility');
+                    }}
+                    className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors ${
+                      city?.id === c.id
+                        ? 'border-teal-500 bg-teal-50'
+                        : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <MapPin className="h-4 w-4 shrink-0 text-teal-600" />
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold text-slate-800">{c.name}</div>
+                      <div className="truncate text-xs text-slate-500">{c.governorate}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {step === 'facility' && (
+          <>
+            <StepTitle>Select a facility in {city?.name}</StepTitle>
+            {loading ? (
+              <Loading text="Loading facilities..." />
+            ) : facilities.length === 0 ? (
+              <p className="py-8 text-center text-sm text-slate-500">No verified facilities in this city yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {facilities.map((f) => (
+                  <FacilitySelector
+                    key={f.id}
+                    facility={f}
+                    selected={facility?.id === f.id}
+                    onClick={() => {
+                      setFacility(f);
+                      goTo('amount');
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {step === 'amount' && facility && (
+          <>
+            <div className="mb-4 flex items-center gap-2 rounded-xl bg-teal-50/70 px-3 py-2 text-xs text-teal-700">
+              <span className="font-semibold">{facility.name}</span>
+              <span>·</span>
+              <span>{facilityTypeLabel(facility.type)}</span>
+              <span>·</span>
+              <span>{city?.name}</span>
+            </div>
+
+            <AmountPicker
+              label="Choose amount"
+              presets={DONATION_PRESETS}
+              amount={amount}
+              customAmount={customAmount}
+              onPreset={(value) => {
+                setAmount(value);
+                setCustomAmount('');
+              }}
+              onCustomChange={setCustomAmount}
+            />
+
+            <DonorFields
+              name={donorName}
+              email={donorEmail}
+              onNameChange={setDonorName}
+              onEmailChange={setDonorEmail}
+            />
+
+            <FormError message={error} />
+            <DonationTotal amount={finalAmount} />
+            <SubmitButton amount={finalAmount} submitting={submitting} onClick={handleSubmit} />
+          </>
+        )}
+
+        {step === 'tracking' && receipt && (
+          <>
+            <div className="flex flex-col items-center py-4 text-center">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+                <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800">Donation Received!</h3>
+              <p className="text-sm text-slate-600">Thank you for supporting {facility?.name}.</p>
+            </div>
+            <div className="mb-4 flex justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm">
+              <span className="text-slate-500">Receipt No.</span>
+              <span className="font-mono font-semibold text-slate-700">{receipt.number}</span>
+            </div>
+            <DonationTracker donationId={receipt.id} />
+            <button
+              onClick={handleClose}
+              className="mt-4 w-full rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-teal-700"
+            >
+              Done
+            </button>
+          </>
+        )}
+
+        {step !== 'amount' && <FormError message={error} />}
+      </div>
+    </ModalShell>
+  );
+}
+
+function StepTitle({ children }: { children: React.ReactNode }) {
+  return <h3 className="mb-3 text-sm font-semibold text-slate-700">{children}</h3>;
+}
+
+function Loading({ text }: { text: string }) {
+  return (
+    <div className="flex items-center justify-center gap-2 py-8 text-sm text-slate-500">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      {text}
     </div>
+  );
+}
+
+function OptionButton({
+  icon,
+  title,
+  subtitle,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-4 text-left transition-colors hover:border-teal-300 hover:bg-slate-50"
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-semibold text-slate-800">{title}</div>
+        <div className="text-xs text-slate-500">{subtitle}</div>
+      </div>
+      <ChevronRight className="h-4 w-4 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-teal-500" />
+    </button>
   );
 }

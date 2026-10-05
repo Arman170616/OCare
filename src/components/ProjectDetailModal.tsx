@@ -91,19 +91,19 @@ export function ProjectDetailModal({ project, onClose, onDonate }: ProjectDetail
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative shrink-0">
-          <div className={`h-28 bg-gradient-to-br ${cat.gradient}`}>
+          <div className={`h-28 ${cat.tint}`}>
             <div className="absolute inset-0 flex items-center justify-center opacity-20">
-              <cat.icon className="h-20 w-20 text-white" />
+              <cat.icon className="h-20 w-20" />
             </div>
           </div>
           <button
             onClick={onClose}
-            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg bg-white/30 text-white backdrop-blur-sm transition-colors hover:bg-white/50"
+            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-600 transition-colors hover:bg-slate-100"
           >
             <X className="h-5 w-5" />
           </button>
-          <div className="absolute -bottom-6 left-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-lg">
-            <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} text-white`}>
+          <div className="absolute -bottom-6 left-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white ring-1 ring-slate-200">
+            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${cat.tint}`}>
               <cat.icon className="h-6 w-6" />
             </div>
           </div>
@@ -166,7 +166,7 @@ export function ProjectDetailModal({ project, onClose, onDonate }: ProjectDetail
           )}
 
           {facility && (
-            <div className="mt-5 rounded-xl border border-slate-200/70 bg-white/50 p-4">
+            <div className="mt-5 rounded-xl border border-slate-200/70 bg-white p-4">
               <h3 className="mb-2 text-sm font-bold text-slate-700">Facility Information</h3>
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <InfoRow icon={Building} label="Facility" value={facility.name} />
@@ -315,10 +315,10 @@ export function ProjectDetailModal({ project, onClose, onDonate }: ProjectDetail
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-slate-200/60 bg-white/50 px-6 py-3">
+        <div className="shrink-0 border-t border-slate-200/60 bg-white px-6 py-3">
           <button
             onClick={() => onDonate(project)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-3.5 font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-xl active:scale-[0.98]"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3.5 font-semibold text-white transition-all active:scale-[0.98]"
           >
             <Droplets className="h-5 w-5" />
             Donate {formatOMR(remaining > 0 ? Math.min(remaining, 10) : 10)} to this project

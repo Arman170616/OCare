@@ -80,7 +80,7 @@ export function OrganizationDashboard() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-white">
           <Building2 className="h-5 w-5" />
         </div>
         <div>
@@ -111,12 +111,12 @@ export function OrganizationDashboard() {
 
       {tab === 'overview' && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          <StatCard icon={Building2} label="My Facilities" value={stats.totalFacilities} color="from-sky-500 to-blue-600" />
-          <StatCard icon={BadgeCheck} label="Verified" value={stats.verifiedFacilities} color="from-emerald-500 to-green-600" />
-          <StatCard icon={Clock} label="Pending" value={stats.pendingFacilities} color="from-amber-500 to-orange-600" />
-          <StatCard icon={TrendingUp} label="Active Projects" value={stats.activeProjects} color="from-teal-500 to-emerald-600" />
-          <StatCard icon={Heart} label="Donations Received" value={stats.totalDonations} color="from-pink-500 to-rose-600" />
-          <StatCard icon={Award} label="Total Raised" value={formatOMR(stats.totalRaised)} color="from-violet-500 to-indigo-600" />
+          <StatCard icon={Building2} label="My Facilities" value={stats.totalFacilities} color="bg-sky-50 text-sky-600" />
+          <StatCard icon={BadgeCheck} label="Verified" value={stats.verifiedFacilities} color="bg-emerald-50 text-emerald-600" />
+          <StatCard icon={Clock} label="Pending" value={stats.pendingFacilities} color="bg-amber-50 text-amber-600" />
+          <StatCard icon={TrendingUp} label="Active Projects" value={stats.activeProjects} color="bg-teal-50 text-teal-600" />
+          <StatCard icon={Heart} label="Donations Received" value={stats.totalDonations} color="bg-pink-50 text-pink-600" />
+          <StatCard icon={Award} label="Total Raised" value={formatOMR(stats.totalRaised)} color="bg-violet-50 text-violet-600" />
         </div>
       )}
 
@@ -125,7 +125,7 @@ export function OrganizationDashboard() {
           <div className="mb-3 flex justify-end">
             <button
               onClick={() => setShowFacilityForm(true)}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg"
+              className="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition-all"
             >
               <Plus className="h-4 w-4" /> Add Facility
             </button>
@@ -185,7 +185,7 @@ export function OrganizationDashboard() {
             <button
               onClick={() => setShowProjectForm(true)}
               disabled={stats.verifiedFacilities === 0}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg disabled:opacity-40"
+              className="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition-all disabled:opacity-40"
             >
               <Plus className="h-4 w-4" /> Add Project
             </button>
@@ -206,7 +206,7 @@ export function OrganizationDashboard() {
                   <div key={p.id} className="glass-card rounded-2xl p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} text-white shadow-md`}>
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${cat.tint}`}>
                           <cat.icon className="h-5 w-5" />
                         </div>
                         <div>
@@ -335,7 +335,7 @@ function FacilityForm({ cities, onClose, onSaved }: { cities: City[]; onClose: (
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-600">City</label>
             <select value={cityId} onChange={(e) => setCityId(e.target.value)} required
-              className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100">
+              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100">
               <option value="">Select city</option>
               {cities.map((c) => <option key={c.id} value={c.id}>{c.name} — {c.governorate}</option>)}
             </select>
@@ -393,7 +393,7 @@ function ProjectForm({ facilities, onClose, onSaved }: { facilities: Facility[];
         <div>
           <label className="mb-1 block text-xs font-semibold text-slate-600">Facility</label>
           <select value={facilityId} onChange={(e) => setFacilityId(e.target.value)} required
-            className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100">
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100">
             <option value="">Select facility</option>
             {facilities.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
           </select>
@@ -414,7 +414,7 @@ function ProjectForm({ facilities, onClose, onSaved }: { facilities: Facility[];
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-600">Water type</label>
             <select value={waterType} onChange={(e) => setWaterType(e.target.value as WaterType | '')}
-              className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400">
+              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400">
               <option value="">General water support</option>
               <option value="drinking">Drinking Water</option>
               <option value="dispenser">Water Dispensers</option>
@@ -430,14 +430,14 @@ function ProjectForm({ facilities, onClose, onSaved }: { facilities: Facility[];
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-600">Need level</label>
             <select value={needLevel} onChange={(e) => setNeedLevel(e.target.value as any)}
-              className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400">
+              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400">
               <option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option>
             </select>
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-600">Urgency</label>
             <select value={urgency} onChange={(e) => setUrgency(e.target.value as any)}
-              className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400">
+              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400">
               <option value="normal">Normal</option><option value="urgent">Urgent</option><option value="critical">Critical</option>
             </select>
           </div>
@@ -446,7 +446,7 @@ function ProjectForm({ facilities, onClose, onSaved }: { facilities: Facility[];
         <div>
           <label className="mb-1 block text-xs font-semibold text-slate-600">Description</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Describe the project..."
-            className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100" />
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100" />
         </div>
         {error && <ErrorBox text={error} />}
         <SubmitButton saving={saving} label="Create Project" />
@@ -492,7 +492,7 @@ function ImpactForm({ projectId, projectTitle, onClose, onSaved }: { projectId: 
         <div>
           <label className="mb-1 block text-xs font-semibold text-slate-600">Description</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Describe what was accomplished..."
-            className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100" />
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100" />
         </div>
         <Grid2>
           <Field label="Completion date" value={completionDate} onChange={setCompletionDate} type="date" />
@@ -577,7 +577,7 @@ function Field({ label, value, onChange, placeholder, required, type = 'text' }:
     <div>
       <label className="mb-1 block text-xs font-semibold text-slate-600">{label}{required && <span className="text-red-400"> *</span>}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required}
-        className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 px-3 text-sm text-slate-700 outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-100" />
+        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 outline-none transition-all focus:border-sky-400 focus:ring-2 focus:ring-sky-100" />
     </div>
   );
 }
@@ -593,7 +593,7 @@ function ErrorBox({ text }: { text: string }) {
 function SubmitButton({ saving, label }: { saving: boolean; label: string }) {
   return (
     <button type="submit" disabled={saving}
-      className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-3 font-semibold text-white shadow-lg shadow-sky-500/25 transition-all hover:shadow-xl active:scale-[0.98] disabled:opacity-50">
+      className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-6 py-3 font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50">
       {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : label}
     </button>
   );
@@ -602,7 +602,7 @@ function SubmitButton({ saving, label }: { saving: boolean; label: string }) {
 function StatCard({ icon: Icon, label, value, color }: { icon: typeof Building2; label: string; value: number | string; color: string }) {
   return (
     <div className="glass-card rounded-2xl p-4">
-      <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${color} text-white shadow-md`}>
+      <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-xl ${color}`}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="text-2xl font-bold text-slate-800">{value}</div>

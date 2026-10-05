@@ -15,13 +15,13 @@ export interface CategoryInfo {
   label: string;
   icon: LucideIcon;
   color: string;
-  gradient: string;
+  tint: string;
 }
 
 export const CATEGORIES: CategoryInfo[] = [
-  { key: 'water', label: 'Water', icon: Droplets, color: 'text-sky-600', gradient: 'from-sky-400 to-cyan-500' },
-  { key: 'mosque', label: 'Mosques', icon: Landmark, color: 'text-teal-600', gradient: 'from-teal-400 to-emerald-500' },
-  { key: 'hospital', label: 'Hospitals', icon: Building2, color: 'text-rose-600', gradient: 'from-rose-400 to-pink-500' },
+  { key: 'water', label: 'Water', icon: Droplets, color: 'text-sky-600', tint: 'bg-sky-50 text-sky-600' },
+  { key: 'mosque', label: 'Mosques', icon: Landmark, color: 'text-teal-600', tint: 'bg-teal-50 text-teal-600' },
+  { key: 'hospital', label: 'Hospitals', icon: Building2, color: 'text-rose-600', tint: 'bg-rose-50 text-rose-600' },
 ];
 
 export function getCategoryInfo(key: Category): CategoryInfo {

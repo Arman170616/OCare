@@ -103,3 +103,11 @@ export function waterTypeLabel(type: string): string {
   };
   return labels[type] || type;
 }
+
+export function resolveAmount(amount: number, customAmount: string): number {
+  return customAmount !== '' ? parseFloat(customAmount) : amount;
+}
+
+export function isValidAmount(value: number): boolean {
+  return Number.isFinite(value) && value > 0;
+}

@@ -1,7 +1,9 @@
 import { useImpactStats } from '@/lib/hooks';
 import { CATEGORIES } from '@/lib/constants';
 import { formatOMR } from '@/lib/utils';
-import { Droplets, Heart, ArrowRight, MapPin, BadgeCheck, TrendingUp, Building2, Landmark, Sparkles } from 'lucide-react';
+import { Droplets, Heart, ArrowRight, MapPin, BadgeCheck, TrendingUp, Building2, Landmark } from 'lucide-react';
+import { HeroVisual } from '@/components/HeroVisual';
+import { Reveal, CountUp } from '@/components/Motion';
 
 interface HomeViewProps {
   onExplore: () => void;
@@ -14,88 +16,64 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
-      <section className="glass-card relative mb-6 overflow-hidden rounded-3xl px-6 py-10 sm:px-10 sm:py-14">
-        <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-teal-500/10 to-transparent" />
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-teal-400/20 to-emerald-500/20 blur-3xl" />
-        <div className="absolute -bottom-10 left-10 h-40 w-40 rounded-full bg-gradient-to-br from-sky-400/10 to-cyan-500/10 blur-2xl" />
-
-        <div className="relative">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-teal-50/80 px-3 py-1 text-xs font-semibold text-teal-700">
-            <Sparkles className="h-3.5 w-3.5" />
-            OmanCare · Location-Aware Charity Platform
+      <section className="mb-10 grid items-center gap-10 pt-6 sm:pt-10 lg:grid-cols-2">
+        <div>
+          <div
+            className="hero-in mb-4 inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-teal-700"
+            style={{ animationDelay: '0ms' }}
+          >
+            <MapPin className="h-3.5 w-3.5" />
+            Location-aware charity in Oman
           </div>
-          <h1 className="max-w-2xl text-3xl font-bold leading-tight tracking-tight text-slate-800 sm:text-4xl md:text-5xl">
-            Find a Need.
-            <br />
-            <span className="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Choose a Place.
-            </span>{' '}
-            Make an Impact.
+          <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+            <span className="hero-in inline-block" style={{ animationDelay: '80ms' }}>Find a Need.</span>{' '}
+            <span className="hero-in inline-block text-teal-600" style={{ animationDelay: '200ms' }}>Choose a Place.</span>{' '}
+            <span className="hero-in inline-block" style={{ animationDelay: '320ms' }}>Make an Impact.</span>
           </h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600">
-            Discover verified charitable needs around you — mosques and hospitals that need your support.
-            Water is provided through these verified facilities, not as a separate direct-water listing.
+          <p className="hero-in mt-4 max-w-xl text-base leading-relaxed text-slate-600" style={{ animationDelay: '440ms' }}>
+            Discover verified mosques and hospitals near you that need support, and follow your donation until it is delivered.
           </p>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <div className="hero-in mt-8 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: '560ms' }}>
             <button
               onClick={onDonateWater}
-              className="group flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-3.5 font-semibold text-white shadow-xl shadow-emerald-500/25 transition-all hover:shadow-2xl hover:shadow-emerald-500/30 active:scale-[0.98]"
+              className="group flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.98]"
             >
-              <Heart className="h-5 w-5" />
+              <Droplets className="h-4 w-4 transition-transform group-hover:-rotate-12" />
               Donate Water Now
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
             <button
               onClick={onExplore}
-              className="group flex items-center justify-center gap-2 rounded-2xl border-2 border-teal-200 bg-white/60 px-6 py-3.5 font-semibold text-teal-600 transition-all hover:border-teal-300 hover:bg-teal-50"
+              className="group flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 font-medium text-slate-700 transition-all hover:-translate-y-0.5 hover:border-teal-300 hover:bg-slate-50"
             >
-              <Heart className="h-5 w-5" />
+              <MapPin className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
               Help Near Me
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
         </div>
-      </section>
 
-      <section className="mb-6 rounded-3xl border border-teal-100 bg-gradient-to-r from-teal-50 via-sky-50 to-emerald-50 p-5">
-        <div className="mb-3 flex items-center gap-2 text-sm font-bold text-teal-700">
-          <MapPin className="h-4 w-4" />
-          Donation Journey
-        </div>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-          <JourneyStep num="1" title="Select Donation Type" text="Choose water, mosque, or hospital support." />
-          <JourneyStep num="2" title="Choose Your Location" text="Pick your city or use nearby mode." />
-          <JourneyStep num="3" title="Find Verified Facilities" text="See trusted mosques and hospitals in your area." />
-          <JourneyStep num="4" title="Donate & Track Impact" text="Follow updates from received to on the way to delivered." />
+        <div className="hero-in" style={{ animationDelay: '300ms' }}>
+          <HeroVisual />
         </div>
       </section>
 
       <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard
-          icon={Heart}
-          label="Total Donations"
-          value={stats.totalDonations.toString()}
-          color="from-teal-500 to-emerald-600"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Total Raised"
-          value={formatOMR(stats.totalRaised)}
-          color="from-sky-500 to-cyan-600"
-        />
-        <StatCard
-          icon={BadgeCheck}
-          label="Active Projects"
-          value={stats.activeProjects.toString()}
-          color="from-amber-500 to-orange-600"
-        />
-        <StatCard
-          icon={Building2}
-          label="Verified Facilities"
-          value="19"
-          color="from-rose-500 to-pink-600"
-        />
+        {[
+          { icon: Heart, label: 'Total Donations', value: <CountUp value={stats.totalDonations} />, color: 'bg-teal-50 text-teal-600' },
+          {
+            icon: TrendingUp,
+            label: 'Total Raised',
+            value: <CountUp value={stats.totalRaised} format={(n) => formatOMR(Math.round(n * 10) / 10)} />,
+            color: 'bg-sky-50 text-sky-600',
+          },
+          { icon: BadgeCheck, label: 'Active Projects', value: <CountUp value={stats.activeProjects} />, color: 'bg-amber-50 text-amber-600' },
+          { icon: Building2, label: 'Verified Facilities', value: <CountUp value={19} />, color: 'bg-rose-50 text-rose-600' },
+        ].map((stat, i) => (
+          <Reveal key={stat.label} delay={i * 90}>
+            <StatCard icon={stat.icon} label={stat.label} value={stat.value} color={stat.color} />
+          </Reveal>
+        ))}
       </section>
 
       {/* <section className="mb-6">
@@ -107,10 +85,10 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
             <button
               key={cat.key}
               onClick={() => onCategorySelect(cat.key)}
-              className="glass-card group flex items-center gap-3 rounded-2xl p-4 text-left transition-all hover:shadow-lg hover:shadow-slate-200/50 active:scale-[0.97]"
+              className="glass-card group flex items-center gap-3 rounded-2xl p-4 text-left transition-all active:scale-[0.97]"
             >
               <div
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} text-white shadow-md transition-transform group-hover:scale-110`}
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${cat.tint} transition-transform group-hover:scale-110`}
               >
                 <cat.icon className="h-6 w-6" />
               </div>
@@ -126,75 +104,71 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
         </div>
       </section> */}
 
-      <section className="mb-6">
+      <Reveal className="mb-6">
         <div className="glass-card rounded-3xl p-6">
-          <h2 className="mb-4 text-lg font-bold text-slate-800">How OmanCare Works</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 className="mb-5 text-lg font-semibold text-slate-900">How OmanCare Works</h2>
+          <div className="relative grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="draw-line absolute left-4 right-[calc(25%-1rem)] top-4 hidden h-px bg-teal-200 lg:block" />
             <HowItWorksStep
               num="1"
+              delay={0}
               icon={Heart}
               title="Select Donation Type"
               desc="Choose the cause you want to support — water, mosque care, or hospital care."
             />
             <HowItWorksStep
               num="2"
+              delay={150}
               icon={MapPin}
               title="Choose Your Location"
               desc="Select your city or use your current location to find needs near you."
             />
             <HowItWorksStep
               num="3"
+              delay={300}
               icon={BadgeCheck}
               title="Find Verified Facilities"
               desc="Browse verified mosques and hospitals in your area, then pick the one that matches your support."
             />
             <HowItWorksStep
               num="4"
+              delay={450}
               icon={TrendingUp}
               title="Donate & Track Impact"
               desc="Donate with confidence and monitor delivery status from received to on the way to delivered."
             />
           </div>
         </div>
-      </section>
+      </Reveal>
 
       <section className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <FeatureCard
-          icon={Droplets}
-          title="Water for Verified Facilities"
-          desc="Support water needs at trusted mosques and hospitals in your area."
-          gradient="from-sky-400 to-cyan-500"
-          onClick={() => onCategorySelect('water')}
-        />
-        <FeatureCard
-          icon={Landmark}
-          title="Mosque Support"
-          desc="Help verified mosques with sanitation, water access, and essential needs."
-          gradient="from-teal-400 to-emerald-500"
-          onClick={() => onCategorySelect('mosque')}
-        />
-        <FeatureCard
-          icon={Building2}
-          title="Hospital Support"
-          desc="Find approved hospital projects that need your assistance and follow progress closely."
-          gradient="from-rose-400 to-pink-500"
-          onClick={() => onCategorySelect('hospital')}
-        />
-      </section>
-
-      <section className="glass-card rounded-3xl p-6 text-center">
-        <h2 className="text-xl font-bold text-slate-800">One Platform. Every Good Cause.</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
-          Instead of asking &ldquo;Where can I donate?&rdquo; — OmanCare lets you ask
-          &ldquo;Who needs help near me?&rdquo; and shows you verified opportunities.
-        </p>
-        <button
-          onClick={onExplore}
-          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-xl active:scale-95"
-        >
-          Explore Nearby Needs
-          <ArrowRight className="h-4 w-4" />
-        </button>
+        <Reveal delay={0}>
+          <FeatureCard
+            icon={Droplets}
+            title="Water for Verified Facilities"
+            desc="Support water needs at trusted mosques and hospitals in your area."
+            tint="bg-sky-50 text-sky-600"
+            onClick={() => onCategorySelect('water')}
+          />
+        </Reveal>
+        <Reveal delay={100}>
+          <FeatureCard
+            icon={Landmark}
+            title="Mosque Support"
+            desc="Help verified mosques with sanitation, water access, and essential needs."
+            tint="bg-teal-50 text-teal-600"
+            onClick={() => onCategorySelect('mosque')}
+          />
+        </Reveal>
+        <Reveal delay={200}>
+          <FeatureCard
+            icon={Building2}
+            title="Hospital Support"
+            desc="Find approved hospital projects that need your assistance and follow progress closely."
+            tint="bg-rose-50 text-rose-600"
+            onClick={() => onCategorySelect('hospital')}
+          />
+        </Reveal>
       </section>
     </div>
   );
@@ -208,16 +182,16 @@ function StatCard({
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  value: string;
+  value: React.ReactNode;
   color: string;
 }) {
   return (
-    <div className="glass-card flex items-center gap-3 rounded-2xl p-4">
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${color} text-white shadow-md`}>
+    <div className="glass-card lift group flex h-full flex-col items-start gap-3 rounded-2xl p-4 sm:flex-row sm:items-center">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${color}`}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0">
-        <div className="truncate text-lg font-bold text-slate-800">{value}</div>
+        <div className="truncate text-lg font-semibold tabular-nums text-slate-900">{value}</div>
         <div className="truncate text-[10px] font-medium uppercase tracking-wide text-slate-500">{label}</div>
       </div>
     </div>
@@ -229,21 +203,26 @@ function HowItWorksStep({
   icon: Icon,
   title,
   desc,
+  delay,
 }: {
   num: string;
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   desc: string;
+  delay: number;
 }) {
   return (
-    <div className="relative rounded-2xl border border-slate-200/60 bg-white/50 p-4">
-      <div className="mb-2 flex items-center gap-2">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 text-xs font-bold text-teal-700">
-          {num}
+    <div className="group relative">
+      <div className="mb-3 flex items-center gap-2">
+        <span
+          className="step-dot relative flex h-8 w-8 items-center justify-center rounded-full border border-teal-200 bg-white text-teal-600"
+          style={{ transitionDelay: `${delay + 300}ms` }}
+        >
+          <Icon className="h-4 w-4" />
         </span>
-        <Icon className="h-4 w-4 text-teal-600" />
+        <span className="relative bg-white pr-2 text-xs font-medium text-slate-400">Step {num}</span>
       </div>
-      <h3 className="mb-1 text-sm font-bold text-slate-800">{title}</h3>
+      <h3 className="mb-1 text-sm font-semibold text-slate-900">{title}</h3>
       <p className="text-xs leading-relaxed text-slate-500">{desc}</p>
     </div>
   );
@@ -253,49 +232,29 @@ function FeatureCard({
   icon: Icon,
   title,
   desc,
-  gradient,
+  tint,
   onClick,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   desc: string;
-  gradient: string;
+  tint: string;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className="glass-card group flex flex-col items-start rounded-2xl p-5 text-left transition-all hover:shadow-lg hover:shadow-slate-200/50 active:scale-[0.98]"
+      className="glass-card lift group flex h-full w-full flex-col items-start rounded-2xl p-5 text-left hover:border-teal-300 active:scale-[0.98]"
     >
-      <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-md transition-transform group-hover:scale-110`}>
-        <Icon className="h-6 w-6" />
+      <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110 ${tint}`}>
+        <Icon className="h-5 w-5" />
       </div>
-      <h3 className="mb-1 text-base font-bold text-slate-800">{title}</h3>
+      <h3 className="mb-1 text-base font-semibold text-slate-900">{title}</h3>
       <p className="text-xs leading-relaxed text-slate-600">{desc}</p>
       <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-teal-600">
         Explore
         <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
       </div>
     </button>
-  );
-}
-
-function JourneyStep({
-  num,
-  title,
-  text,
-}: {
-  num: string;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/70 bg-white/70 p-3 shadow-sm">
-      <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-lg bg-teal-600 text-xs font-bold text-white">
-        {num}
-      </div>
-      <h3 className="mb-1 text-sm font-bold text-slate-800">{title}</h3>
-      <p className="text-xs leading-relaxed text-slate-600">{text}</p>
-    </div>
   );
 }

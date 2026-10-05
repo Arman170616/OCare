@@ -77,7 +77,7 @@ export function DonationHistoryView() {
             return (
               <div
                 key={donation.id}
-                className="bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow overflow-hidden"
+                className="bg-white rounded-lg border border-gray-200 transition-shadow overflow-hidden"
               >
                 <div className="p-6">
                   <div className="flex items-start justify-between gap-4">

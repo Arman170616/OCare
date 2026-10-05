@@ -1,5 +1,6 @@
 import type { Facility } from '@/lib/types';
-import { Building2, MapPin, CheckCircle2 } from 'lucide-react';
+import { facilityTypeLabel } from '@/lib/utils';
+import { Building2, Landmark, MapPin, BadgeCheck, ChevronRight } from 'lucide-react';
 
 interface FacilitySelectorProps {
   facility: Facility;
@@ -7,62 +8,34 @@ interface FacilitySelectorProps {
   onClick: () => void;
 }
 
-const facilityTypeIcon = (type: 'mosque' | 'hospital' | 'facility') => {
-  return <Building2 className="w-6 h-6 text-teal-600" />;
-};
-
-const facilityTypeLabel = (type: 'mosque' | 'hospital' | 'facility') => {
-  const labels: Record<typeof type, string> = {
-    mosque: 'Mosque',
-    hospital: 'Hospital',
-    facility: 'Facility',
-  };
-  return labels[type] || type;
-};
-
 export function FacilitySelector({ facility, selected, onClick }: FacilitySelectorProps) {
+  const Icon = facility.type === 'mosque' ? Landmark : Building2;
+  const tint = facility.type === 'hospital' ? 'bg-rose-50 text-rose-600' : 'bg-teal-50 text-teal-600';
+
   return (
     <button
       onClick={onClick}
-      className={`w-full p-4 rounded-lg border-2 transition-all text-left group ${
-        selected
-          ? 'border-teal-500 bg-teal-50'
-          : 'border-gray-200 hover:border-teal-300 hover:bg-gray-50'
+      className={`group flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${
+        selected ? 'border-teal-500 bg-teal-50' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'
       }`}
     >
-      <div className="flex items-start gap-4">
-        <div className={`p-3 rounded-lg ${selected ? 'bg-teal-100' : 'bg-gray-100 group-hover:bg-teal-100'}`}>
-          {facilityTypeIcon(facility.type)}
-        </div>
-
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-semibold text-gray-900">{facility.name}</h4>
-            {facility.verification_status === 'verified' && (
-              <CheckCircle2 className="w-4 h-4 text-teal-600" />
-            )}
-          </div>
-
-          <p className="text-xs text-gray-600 mb-2">{facilityTypeLabel(facility.type)}</p>
-
-          {facility.address && (
-            <div className="flex items-center gap-1 text-sm text-gray-600">
-              <MapPin className="w-4 h-4 text-gray-400" />
-              {facility.address}
-            </div>
-          )}
-
-          {facility.area && (
-            <p className="text-xs text-gray-500 mt-1">📍 {facility.area}</p>
-          )}
-        </div>
-
-        {selected && (
-          <div className="flex-shrink-0">
-            <CheckCircle2 className="w-6 h-6 text-teal-600 animate-pulse" />
-          </div>
-        )}
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tint}`}>
+        <Icon className="h-5 w-5" />
       </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="truncate text-sm font-semibold text-slate-800">{facility.name}</span>
+          {facility.verification_status === 'verified' && (
+            <BadgeCheck className="h-4 w-4 shrink-0 text-teal-600" />
+          )}
+        </div>
+        <div className="mt-0.5 flex items-center gap-1 truncate text-xs text-slate-500">
+          <MapPin className="h-3 w-3 shrink-0" />
+          {facilityTypeLabel(facility.type)}
+          {(facility.area || facility.address) && ` · ${facility.area ?? facility.address}`}
+        </div>
+      </div>
+      <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-teal-500" />
     </button>
   );
 }

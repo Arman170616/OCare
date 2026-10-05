@@ -48,7 +48,7 @@ export function Header({ activeView, onNavigate }: HeaderProps) {
             onClick={() => onNavigate('home')}
             className="flex items-center gap-2.5 transition-transform hover:scale-[1.02]"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white">
               <Sparkles className="h-5 w-5" />
             </div>
             <div className="text-left">
@@ -69,8 +69,8 @@ export function Header({ activeView, onNavigate }: HeaderProps) {
                   onClick={() => onNavigate(item.key)}
                   className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium transition-all ${
                     isActive
-                      ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-md shadow-emerald-500/25'
-                      : 'text-slate-600 hover:bg-white/60'
+                      ? 'bg-teal-600 text-white'
+                      : 'text-slate-600 hover:bg-white'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -91,9 +91,9 @@ export function Header({ activeView, onNavigate }: HeaderProps) {
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-1.5 rounded-xl bg-white/60 px-2.5 py-2 transition-all hover:bg-white/80"
+                className="flex items-center gap-1.5 rounded-xl bg-white px-2.5 py-2 transition-all hover:bg-slate-100"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-emerald-500 text-xs font-bold text-white">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-600 text-xs font-bold text-white">
                   {profile?.full_name?.charAt(0).toUpperCase() ?? 'U'}
                 </div>
                 <ChevronDown className="h-3 w-3 text-slate-400" />
@@ -150,7 +150,7 @@ export function Header({ activeView, onNavigate }: HeaderProps) {
                 onClick={() => onNavigate(item.key)}
                 className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-all ${
                   isActive
-                    ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-md'
+                    ? 'bg-teal-600 text-white'
                     : 'glass-card text-slate-600'
                 }`}
               >

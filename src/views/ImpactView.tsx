@@ -82,37 +82,37 @@ export function ImpactView() {
           icon={Heart}
           label="Donations"
           value={recentDonations.length.toString()}
-          gradient="from-teal-500 to-emerald-600"
+          tint="bg-teal-50 text-teal-600"
         />
         <ImpactStat
           icon={Droplets}
           label="Water Projects"
           value={(totals.byCategory['water'] ?? 0).toString()}
-          gradient="from-sky-500 to-cyan-600"
+          tint="bg-sky-50 text-sky-600"
         />
         <ImpactStat
           icon={Landmark}
           label="Mosques"
           value={totals.mosques.toString()}
-          gradient="from-teal-400 to-emerald-500"
+          tint="bg-teal-50 text-teal-600"
         />
         <ImpactStat
           icon={Building2}
           label="Hospitals"
           value={totals.hospitals.toString()}
-          gradient="from-rose-400 to-pink-500"
+          tint="bg-rose-50 text-rose-600"
         />
         <ImpactStat
           icon={Repeat}
           label="Sponsorships"
           value={totals.sponsorships.toString()}
-          gradient="from-amber-500 to-orange-600"
+          tint="bg-amber-50 text-amber-600"
         />
         <ImpactStat
           icon={TrendingUp}
           label="Total Given"
           value={formatOMR(totals.total)}
-          gradient="from-violet-500 to-indigo-600"
+          tint="bg-violet-50 text-violet-600"
         />
       </div>
 
@@ -219,9 +219,9 @@ function DonationCard({
     <div className="glass-card rounded-2xl p-4">
       <div className="flex items-center gap-3">
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${
-            cat?.gradient ?? 'from-slate-400 to-slate-500'
-          } text-white shadow-md`}
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+            cat?.tint ?? 'bg-slate-100 text-slate-600'
+          }`}
         >
           <CatIcon className="h-5 w-5" />
         </div>
@@ -301,7 +301,7 @@ function DeliveryTimeline({ currentStepIdx, updatedAt }: { currentStepIdx: numbe
                 className={`flex h-7 w-7 items-center justify-center rounded-full transition-all ${
                   done
                     ? active
-                      ? 'bg-teal-500 text-white shadow-md ring-4 ring-teal-100'
+                      ? 'bg-teal-500 text-white ring-4 ring-teal-100'
                       : 'bg-emerald-500 text-white'
                     : 'bg-slate-100 text-slate-400'
                 }`}
@@ -335,16 +335,16 @@ function ImpactStat({
   icon: Icon,
   label,
   value,
-  gradient,
+  tint,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
-  gradient: string;
+  tint: string;
 }) {
   return (
     <div className="glass-card rounded-2xl p-4">
-      <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-md`}>
+      <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-xl ${tint}`}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="text-lg font-bold text-slate-800">{value}</div>

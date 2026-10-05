@@ -534,16 +534,6 @@ def get_cities() -> List[Dict[str, Any]]:
         conn.close()
 
 
-@app.get("/api/facilities")
-def get_facilities() -> List[Dict[str, Any]]:
-    conn = get_connection()
-    try:
-        rows = conn.execute("SELECT * FROM facilities ORDER BY name").fetchall()
-        return [dict(r) for r in rows]
-    finally:
-        conn.close()
-
-
 def normalize_project_row(row: Dict[str, Any] | sqlite3.Row) -> Dict[str, Any]:
     if hasattr(row, 'keys'):
         row_data = dict(row)

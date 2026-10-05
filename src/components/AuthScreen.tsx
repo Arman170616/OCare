@@ -69,7 +69,7 @@ export function AuthScreen() {
     <div className="flex min-h-screen items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center">
-          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-xl shadow-emerald-500/30">
+          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-600 text-white">
             <Sparkles className="h-7 w-7" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-800">OmanCare</h1>
@@ -109,7 +109,7 @@ export function AuthScreen() {
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Your name"
                       required
-                      className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                     />
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export function AuthScreen() {
                         onChange={(e) => setOrgName(e.target.value)}
                         placeholder="e.g. Salalah Charity Society"
                         required
-                        className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                       />
                     </div>
                   </div>
@@ -170,7 +170,7 @@ export function AuthScreen() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 />
               </div>
             </div>
@@ -185,7 +185,7 @@ export function AuthScreen() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 />
               </div>
             </div>
@@ -200,7 +200,7 @@ export function AuthScreen() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50"
             >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

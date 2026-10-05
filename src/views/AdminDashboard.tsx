@@ -80,7 +80,7 @@ export function AdminDashboard() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-md">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-600 text-white">
           <Shield className="h-5 w-5" />
         </div>
         <div>
@@ -110,14 +110,14 @@ export function AdminDashboard() {
 
       {tab === 'overview' && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          <StatCard icon={Building2} label="Total Facilities" value={stats.totalFacilities} color="from-teal-500 to-emerald-600" />
-          <StatCard icon={Clock} label="Pending Verification" value={stats.pendingFacilities} color="from-amber-500 to-orange-600" />
-          <StatCard icon={BadgeCheck} label="Verified" value={stats.verifiedFacilities} color="from-emerald-500 to-green-600" />
-          <StatCard icon={TrendingUp} label="Active Projects" value={stats.activeProjects} color="from-sky-500 to-cyan-600" />
-          <StatCard icon={Users} label="Total Users" value={stats.totalUsers} color="from-violet-500 to-indigo-600" />
-          <StatCard icon={Shield} label="Admins" value={stats.admins} color="from-red-500 to-rose-600" />
-          <StatCard icon={Building2} label="Organizations" value={stats.organizations} color="from-blue-500 to-sky-600" />
-          <StatCard icon={Heart} label="Donors" value={stats.donors} color="from-pink-500 to-rose-600" />
+          <StatCard icon={Building2} label="Total Facilities" value={stats.totalFacilities} color="bg-teal-50 text-teal-600" />
+          <StatCard icon={Clock} label="Pending Verification" value={stats.pendingFacilities} color="bg-amber-50 text-amber-600" />
+          <StatCard icon={BadgeCheck} label="Verified" value={stats.verifiedFacilities} color="bg-emerald-50 text-emerald-600" />
+          <StatCard icon={TrendingUp} label="Active Projects" value={stats.activeProjects} color="bg-sky-50 text-sky-600" />
+          <StatCard icon={Users} label="Total Users" value={stats.totalUsers} color="bg-violet-50 text-violet-600" />
+          <StatCard icon={Shield} label="Admins" value={stats.admins} color="bg-red-50 text-red-600" />
+          <StatCard icon={Building2} label="Organizations" value={stats.organizations} color="bg-blue-50 text-blue-600" />
+          <StatCard icon={Heart} label="Donors" value={stats.donors} color="bg-pink-50 text-pink-600" />
         </div>
       )}
 
@@ -200,7 +200,7 @@ export function AdminDashboard() {
                 <div key={p.id} className="glass-card rounded-2xl p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} text-white shadow-md`}>
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${cat.tint}`}>
                         <cat.icon className="h-5 w-5" />
                       </div>
                       <div>
@@ -242,7 +242,7 @@ export function AdminDashboard() {
               <div key={u.id} className="glass-card rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 text-sm font-bold text-white">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-sm font-bold text-white">
                       {u.full_name?.charAt(0).toUpperCase() ?? 'U'}
                     </div>
                     <div>
@@ -258,7 +258,7 @@ export function AdminDashboard() {
                     <select
                       value={u.role}
                       onChange={(e) => handleSetRole(u.id, e.target.value as 'admin' | 'organization' | 'donor')}
-                      className="rounded-lg border border-slate-200 bg-white/70 px-2 py-1.5 text-xs font-medium text-slate-700 outline-none focus:border-teal-400"
+                      className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-700 outline-none focus:border-teal-400"
                     >
                       <option value="donor">Donor</option>
                       <option value="organization">Organization</option>
@@ -278,7 +278,7 @@ export function AdminDashboard() {
 function StatCard({ icon: Icon, label, value, color }: { icon: typeof Shield; label: string; value: number; color: string }) {
   return (
     <div className="glass-card rounded-2xl p-4">
-      <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${color} text-white shadow-md`}>
+      <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-xl ${color}`}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="text-2xl font-bold text-slate-800">{value}</div>

@@ -110,15 +110,8 @@ function AppContent() {
         />
       )}
 
-      <footer className="mx-auto max-w-7xl px-4 py-8 text-center">
-        <div className="glass-card rounded-2xl px-6 py-4">
-          <p className="text-sm font-semibold text-slate-700">
-            OmanCare — One Platform. Every Good Cause.
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Find a Need. Choose a Place. Make an Impact. · Water Near Me · Help Near Me · Impact You Can Track.
-          </p>
-        </div>
+      <footer className="mx-auto max-w-7xl border-t border-slate-200 px-4 py-6 text-center text-xs text-slate-500">
+        OmanCare — One Platform. Every Good Cause.
       </footer>
     </div>
   );

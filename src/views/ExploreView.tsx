@@ -31,6 +31,8 @@ interface ExploreViewProps {
 
 type SortMode = 'distance' | 'urgency' | 'remaining' | 'need';
 
+const NEAR_ME = '__near_me__';
+
 export function ExploreView({ initialCategory, onDonate, onViewDetails }: ExploreViewProps) {
   const { cities, loading: citiesLoading, error: citiesError } = useCities();
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
@@ -102,6 +104,8 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setSelectedCity(null);
+        setSortMode('distance');
         setLocating(false);
       },
       (err) => {
@@ -136,14 +140,19 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
               <div className="relative flex-1">
                 <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <select
-                  value={selectedCity?.id ?? ''}
+                  value={userLocation ? NEAR_ME : selectedCity?.id ?? ''}
                   onChange={(e) => {
+                    if (e.target.value === NEAR_ME) {
+                      handleGetLocation();
+                      return;
+                    }
                     const city = cities.find((c) => c.id === e.target.value);
                     setSelectedCity(city ?? null);
                     setUserLocation(null);
                   }}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white/70 py-2.5 pl-10 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 >
+                  <option value={NEAR_ME}>Near me (current location)</option>
                   <option value="">All cities in Oman</option>
                   {cities.map((city) => (
                     <option key={city.id} value={city.id}>
@@ -155,7 +164,9 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
               <button
                 onClick={handleGetLocation}
                 disabled={locating}
-                className="flex shrink-0 items-center gap-2 rounded-xl bg-teal-50 px-3 py-2.5 text-sm font-semibold text-teal-700 transition-all hover:bg-teal-100 disabled:opacity-50"
+                className={`flex shrink-0 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all disabled:opacity-50 ${
+                  userLocation ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-teal-50 text-teal-700 hover:bg-teal-100'
+                }`}
                 title="Use my current location"
               >
                 {locating ? (
@@ -183,7 +194,7 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Mosque, hospital, area, project..."
-                className="w-full rounded-xl border border-slate-200 bg-white/70 py-2.5 pl-10 pr-9 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-9 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
               />
               {searchQuery && (
                 <button
@@ -203,7 +214,6 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
           label="All"
           active={!selectedCategory}
           onClick={() => setSelectedCategory(null)}
-          gradient="from-slate-500 to-slate-600"
         />
         {CATEGORIES.map((cat) => (
           <CategoryChip
@@ -212,7 +222,6 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
             icon={cat.icon}
             active={selectedCategory === cat.key}
             onClick={() => setSelectedCategory(cat.key)}
-            gradient={cat.gradient}
           />
         ))}
       </div>
@@ -252,7 +261,10 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
               <ListIcon className="h-3.5 w-3.5" /> List
             </button>
             <button
-              onClick={() => setViewMode('map')}
+              onClick={() => {
+                setViewMode('map');
+                if (!userLocation && !selectedCity && !locating) handleGetLocation();
+              }}
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
                 viewMode === 'map' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500'
               }`}
@@ -267,7 +279,7 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
               <select
                 value={sortMode}
                 onChange={(e) => setSortMode(e.target.value as SortMode)}
-                className="appearance-none rounded-xl border border-slate-200 bg-white/70 py-2 pl-8 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-teal-400"
+                className="appearance-none rounded-xl border border-slate-200 bg-white py-2 pl-8 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-teal-400"
               >
                 <option value="distance">Nearest</option>
                 <option value="urgency">Most Urgent</option>
@@ -319,7 +331,9 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
             />
           </div>
           <div className="border-t border-slate-200/60 px-4 py-2.5 text-xs text-slate-500">
-            {sortedProjects.length} verified {sortedProjects.length === 1 ? 'project' : 'projects'} on the map
+            {userLocation
+              ? `Showing your location · nearest project ${Math.min(...sortedProjects.map((p) => p.distance)).toFixed(1)} km away · ${sortedProjects.length} verified ${sortedProjects.length === 1 ? 'project' : 'projects'} in total`
+              : `${sortedProjects.length} verified ${sortedProjects.length === 1 ? 'project' : 'projects'} on the map`}
           </div>
         </div>
       ) : (
@@ -368,21 +382,19 @@ function CategoryChip({
   icon: Icon,
   active,
   onClick,
-  gradient,
 }: {
   label: string;
   icon?: React.ComponentType<{ className?: string }>;
   active: boolean;
   onClick: () => void;
-  gradient: string;
 }) {
   return (
     <button
       onClick={onClick}
       className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
         active
-          ? `bg-gradient-to-r ${gradient} text-white shadow-md`
-          : 'glass-card text-slate-600 hover:bg-white/80'
+          ? 'bg-slate-900 text-white'
+          : 'glass-card text-slate-600 hover:bg-slate-100'
       }`}
     >
       {Icon && <Icon className="h-3.5 w-3.5" />}
