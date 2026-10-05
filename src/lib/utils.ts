@@ -111,3 +111,8 @@ export function resolveAmount(amount: number, customAmount: string): number {
 export function isValidAmount(value: number): boolean {
   return Number.isFinite(value) && value > 0;
 }
+
+/** True when a donor at `distanceKm` from the facility falls inside the post's service area. */
+export function isWithinServiceArea(project: { service_radius_km?: number | null }, distanceKm: number): boolean {
+  return project.service_radius_km == null || distanceKm <= project.service_radius_km;
+}

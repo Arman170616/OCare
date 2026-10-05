@@ -9,7 +9,7 @@ import {
   waterTypeLabel,
 } from '@/lib/utils';
 import { getCategoryInfo } from '@/lib/constants';
-import { MapPin, BadgeCheck, Droplets, Building2, Landmark } from 'lucide-react';
+import { MapPin, BadgeCheck, Droplets, Building2, Landmark, Radar } from 'lucide-react';
 
 interface ProjectCardProps {
   project: ProjectWithDistance;
@@ -33,6 +33,9 @@ export function ProjectCard({ project, onDonate, onViewDetails }: ProjectCardPro
 
   return (
     <div className="glass-card group flex flex-col rounded-2xl p-5 transition-all">
+      {project.image_url && (
+        <img src={project.image_url} alt="" className="mb-4 h-36 w-full rounded-xl object-cover" />
+      )}
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div
@@ -75,6 +78,12 @@ export function ProjectCard({ project, onDonate, onViewDetails }: ProjectCardPro
         {project.water_type && (
           <span className="rounded-md bg-sky-50 px-1.5 py-0.5 font-medium text-sky-700">
             {waterTypeLabel(project.water_type)}
+          </span>
+        )}
+        {project.service_radius_km != null && (
+          <span className="flex items-center gap-1 rounded-md bg-teal-50 px-1.5 py-0.5 font-medium text-teal-700">
+            <Radar className="h-3 w-3" />
+            Serves {project.service_radius_km} km
           </span>
         )}
       </div>

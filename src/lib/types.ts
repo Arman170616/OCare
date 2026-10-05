@@ -40,6 +40,8 @@ export interface Project {
   verified: boolean;
   image_url: string | null;
   water_type: WaterType | null;
+  /** Donors outside this distance (km) from the facility don't see the post; null = everywhere. */
+  service_radius_km?: number | null;
   created_at: string;
   updated_at: string;
   facility?: Facility;

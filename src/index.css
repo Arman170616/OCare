@@ -95,6 +95,15 @@
   border-top-color: #0f172a;
 }
 
+.radius-pin {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0d9488;
+  border: 3px solid white;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.3);
+}
+
 /* Animations */
 @keyframes fadeInUp {
   from {
@@ -141,11 +150,25 @@
   transform: none;
 }
 
-.hero-grid {
-  background-image: radial-gradient(rgba(100, 116, 139, 0.18) 1px, transparent 1px);
-  background-size: 18px 18px;
-  mask-image: radial-gradient(ellipse at 60% 40%, black 40%, transparent 85%);
-  -webkit-mask-image: radial-gradient(ellipse at 60% 40%, black 40%, transparent 85%);
+@keyframes drawOutline {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.oman-outline {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: drawOutline 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.3s forwards;
+}
+
+.oman-fill {
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out 0.9s forwards;
 }
 
 @keyframes pinRing {
@@ -236,6 +259,14 @@
   }
   .step-dot {
     transition: none !important;
+  }
+  .oman-outline {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .oman-fill {
+    opacity: 1;
+    animation: none;
   }
   .hero-in,
   .hero-pop,

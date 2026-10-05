@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { Profile } from './auth-types';
+import { getStoredUsers, writeStoredUsers } from './users';
 
 interface AuthContextValue {
   profile: Profile | null;
@@ -11,51 +12,7 @@ interface AuthContextValue {
 }
 
 const STORAGE_KEY = 'omancare-profile';
-const USERS_KEY = 'omancare-users';
-
-const DEFAULT_USERS = [
-  {
-    id: 'admin-demo',
-    email: 'admin@omancare.com',
-    password: 'admin123',
-    full_name: 'Platform Admin',
-    role: 'admin',
-    organization_name: null,
-    phone: null,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: 'donor-demo',
-    email: 'donor@omancare.com',
-    password: 'donor123',
-    full_name: 'Aisha Rahman',
-    role: 'donor',
-    organization_name: null,
-    phone: null,
-    created_at: new Date().toISOString(),
-  },
-] as const;
-
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function getStoredUsers() {
-  const raw = localStorage.getItem(USERS_KEY);
-  if (!raw) {
-    localStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
-    return [...DEFAULT_USERS];
-  }
-
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : [...DEFAULT_USERS];
-  } catch {
-    return [...DEFAULT_USERS];
-  }
-}
-
-function writeStoredUsers(users: Array<Record<string, any>>) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
 
 function getStoredProfile(): Profile | null {
   const raw = localStorage.getItem(STORAGE_KEY);

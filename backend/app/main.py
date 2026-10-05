@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import binascii
 import json
 import sqlite3
 import uuid
@@ -7,14 +9,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
-from fastapi import FastAPI, HTTPException, Query, Body
+from fastapi import FastAPI, HTTPException, Query, Body, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = BASE_DIR / "omancare.db"
+UPLOADS_DIR = BASE_DIR / "uploads"
+UPLOADS_DIR.mkdir(exist_ok=True)
+MAX_IMAGE_BYTES = 3 * 1024 * 1024
+IMAGE_TYPES = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
 
 app = FastAPI(title="OmanCare API", version="1.0.0")
+app.mount("/api/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
@@ -358,6 +366,11 @@ def init_db() -> None:
             """
         )
 
+        project_columns = {row["name"] for row in conn.execute("PRAGMA table_info(projects)")}
+        if "service_radius_km" not in project_columns:
+            # NULL = no radius limit (visible everywhere)
+            conn.execute("ALTER TABLE projects ADD COLUMN service_radius_km REAL")
+
         for table_name, rows in load_seed_data().items():
             count = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
             if count == 0:
@@ -578,6 +591,7 @@ PROJECT_SELECT_SQL = """
         p.verified,
         p.image_url,
         p.water_type,
+        p.service_radius_km,
         p.created_at,
         p.updated_at,
         f.id AS facility__id,
@@ -606,12 +620,16 @@ def get_projects(
     city_id: str | None = None,
     facility_id: str | None = None,
     user_id: str | None = None,
+    status: str | None = None,
 ) -> List[Dict[str, Any]]:
     conn = get_connection()
     try:
         query = PROJECT_SELECT_SQL + " WHERE 1=1"
         params: List[Any] = []
 
+        if status:
+            query += " AND p.status = ?"
+            params.append(status)
         if category:
             query += " AND p.category = ?"
             params.append(category)
@@ -729,17 +747,6 @@ def get_impact_stats() -> Dict[str, Any]:
             "completedProjects": completed_projects,
             "totalRaised": float(total_raised or 0),
         }
-    finally:
-        conn.close()
-
-
-@app.get("/api/cities")
-def get_cities() -> List[Dict[str, Any]]:
-    """Get all cities in Oman"""
-    conn = get_connection()
-    try:
-        rows = conn.execute("SELECT * FROM cities ORDER BY name").fetchall()
-        return [dict(r) for r in rows]
     finally:
         conn.close()
 
@@ -942,3 +949,168 @@ def create_donation_new(payload: dict[str, Any] = Body(...)) -> Dict[str, Any]:
         }
     finally:
         conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Admin: donation posts and facility verification
+# NOTE: the app has no server-side auth yet; these routes trust the caller.
+# ---------------------------------------------------------------------------
+
+PROJECT_STATUSES = {"active", "funded", "completed", "cancelled"}
+
+
+def save_image_data_url(data_url: str) -> str:
+    """Store a base64 data URL upload and return its public path."""
+    try:
+        header, encoded = data_url.split(",", 1)
+        mime = header.split(";")[0].removeprefix("data:")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid image data")
+    ext = IMAGE_TYPES.get(mime)
+    if ext is None:
+        raise HTTPException(status_code=400, detail="Photo must be JPEG, PNG or WebP")
+    try:
+        raw = base64.b64decode(encoded, validate=True)
+    except (binascii.Error, ValueError):
+        raise HTTPException(status_code=400, detail="Invalid image data")
+    if len(raw) > MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=400, detail="Photo must be 3 MB or smaller")
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    (UPLOADS_DIR / filename).write_bytes(raw)
+    return f"/api/uploads/{filename}"
+
+
+def delete_uploaded_image(image_url: str | None) -> None:
+    if image_url and image_url.startswith("/api/uploads/"):
+        (UPLOADS_DIR / image_url.rsplit("/", 1)[-1]).unlink(missing_ok=True)
+
+
+class AdminPostIn(BaseModel):
+    facility_id: str
+    title: str = Field(..., min_length=3, max_length=120)
+    description: str = Field("", max_length=2000)
+    target_amount: float = Field(..., gt=0)
+    service_radius_km: float | None = Field(None, gt=0, le=500)
+    image_data: str | None = None
+    remove_image: bool = False
+    status: str = "active"
+
+
+@app.get("/api/admin/facilities")
+def admin_list_facilities() -> List[Dict[str, Any]]:
+    conn = get_connection()
+    try:
+        rows = conn.execute("SELECT * FROM facilities ORDER BY name").fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+@app.put("/api/admin/facilities/{facility_id}/verification")
+def admin_set_verification(facility_id: str, payload: dict[str, Any] = Body(...)) -> Dict[str, Any]:
+    status = str(payload.get("status", "")).strip()
+    if status not in {"verified", "rejected", "pending"}:
+        raise HTTPException(status_code=400, detail="Status must be verified, rejected or pending")
+    conn = get_connection()
+    try:
+        cur = conn.execute(
+            "UPDATE facilities SET verification_status = ?, verification_date = ? WHERE id = ?",
+            (status, utc_now() if status == "verified" else None, facility_id),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Facility not found")
+        conn.commit()
+        return dict(conn.execute("SELECT * FROM facilities WHERE id = ?", (facility_id,)).fetchone())
+    finally:
+        conn.close()
+
+
+def _validate_post(conn: sqlite3.Connection, post: AdminPostIn) -> None:
+    if post.status not in PROJECT_STATUSES:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    facility = conn.execute("SELECT verification_status FROM facilities WHERE id = ?", (post.facility_id,)).fetchone()
+    if facility is None:
+        raise HTTPException(status_code=404, detail="Facility not found")
+    if facility["verification_status"] != "verified":
+        raise HTTPException(status_code=400, detail="Facility must be verified before posting")
+
+
+@app.post("/api/admin/projects", status_code=201)
+def admin_create_post(post: AdminPostIn) -> Dict[str, Any]:
+    conn = get_connection()
+    try:
+        _validate_post(conn, post)
+        image_url = save_image_data_url(post.image_data) if post.image_data else None
+        project_id = f"post-{uuid.uuid4().hex[:12]}"
+        now = utc_now()
+        conn.execute(
+            """
+            INSERT INTO projects (
+                id, facility_id, title, category, need_level, urgency, target_amount,
+                collected_amount, currency, description, status, verified, image_url,
+                water_type, service_radius_km, created_at, updated_at
+            ) VALUES (?, ?, ?, 'water', 'medium', 'normal', ?, 0, 'OMR', ?, ?, 1, ?, NULL, ?, ?, ?)
+            """,
+            (
+                project_id, post.facility_id, post.title.strip(), post.target_amount,
+                post.description.strip() or None, post.status, image_url, post.service_radius_km, now, now,
+            ),
+        )
+        conn.commit()
+        return normalize_project_row(conn.execute(PROJECT_SELECT_SQL + " WHERE p.id = ?", (project_id,)).fetchone())
+    finally:
+        conn.close()
+
+
+@app.put("/api/admin/projects/{project_id}")
+def admin_update_post(project_id: str, post: AdminPostIn) -> Dict[str, Any]:
+    conn = get_connection()
+    try:
+        existing = conn.execute("SELECT image_url FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if existing is None:
+            raise HTTPException(status_code=404, detail="Post not found")
+        _validate_post(conn, post)
+
+        image_url = existing["image_url"]
+        if post.image_data:
+            image_url = save_image_data_url(post.image_data)
+            delete_uploaded_image(existing["image_url"])
+        elif post.remove_image:
+            delete_uploaded_image(existing["image_url"])
+            image_url = None
+
+        conn.execute(
+            """
+            UPDATE projects SET facility_id = ?, title = ?, description = ?, target_amount = ?,
+                service_radius_km = ?, status = ?, image_url = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                post.facility_id, post.title.strip(), post.description.strip() or None, post.target_amount,
+                post.service_radius_km, post.status, image_url, utc_now(), project_id,
+            ),
+        )
+        conn.commit()
+        return normalize_project_row(conn.execute(PROJECT_SELECT_SQL + " WHERE p.id = ?", (project_id,)).fetchone())
+    finally:
+        conn.close()
+
+
+@app.delete("/api/admin/projects/{project_id}", status_code=204, response_class=Response)
+def admin_delete_post(project_id: str) -> Response:
+    conn = get_connection()
+    try:
+        row = conn.execute("SELECT image_url FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Post not found")
+        donations = conn.execute("SELECT COUNT(*) FROM donations WHERE project_id = ?", (project_id,)).fetchone()[0]
+        if donations:
+            raise HTTPException(status_code=409, detail="This post has donations. Close it instead of deleting.")
+        conn.execute("DELETE FROM impact_updates WHERE project_id = ?", (project_id,))
+        conn.execute("DELETE FROM projects WHERE id = ?", (project_id,))
+        conn.commit()
+        delete_uploaded_image(row["image_url"])
+        return Response(status_code=204)
+    finally:
+        conn.close()
+

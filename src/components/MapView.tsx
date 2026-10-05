@@ -93,6 +93,19 @@ export function MapView({
 
       const color = categoryColors[project.category] ?? '#0d9488';
 
+      if (project.service_radius_km != null) {
+        const area = L.circle([facility.lat, facility.lng], {
+          radius: project.service_radius_km * 1000,
+          color,
+          weight: 1,
+          dashArray: '4 4',
+          fillColor: color,
+          fillOpacity: 0.05,
+          interactive: false,
+        }).addTo(map);
+        markersRef.current.push(area);
+      }
+
       const icon = L.divIcon({
         html: `<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:white">${cat.label.charAt(0)}</div>`,
         className: 'project-marker',

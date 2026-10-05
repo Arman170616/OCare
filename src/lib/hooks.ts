@@ -198,7 +198,7 @@ export function useProjects(filters?: {
       setError(null);
 
       try {
-        const params = new URLSearchParams();
+        const params = new URLSearchParams({ status: 'active' });
         if (filters?.category) params.set('category', filters.category);
         if (filters?.cityId) params.set('city_id', filters.cityId);
         if (filters?.facilityTypes && filters.facilityTypes.length > 0) {

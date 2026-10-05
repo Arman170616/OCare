@@ -91,11 +91,15 @@ export function ProjectDetailModal({ project, onClose, onDonate }: ProjectDetail
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative shrink-0">
-          <div className={`h-28 ${cat.tint}`}>
-            <div className="absolute inset-0 flex items-center justify-center opacity-20">
-              <cat.icon className="h-20 w-20" />
+          {project.image_url ? (
+            <img src={project.image_url} alt="" className="h-44 w-full object-cover" />
+          ) : (
+            <div className={`h-28 ${cat.tint}`}>
+              <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                <cat.icon className="h-20 w-20" />
+              </div>
             </div>
-          </div>
+          )}
           <button
             onClick={onClose}
             className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-600 transition-colors hover:bg-slate-100"
@@ -126,6 +130,9 @@ export function ProjectDetailModal({ project, onClose, onDonate }: ProjectDetail
             </span>
             <span className={`rounded-lg px-2 py-0.5 font-semibold ${urgencyColor(project.urgency)}`}>
               {project.urgency.toUpperCase()}
+            </span>
+            <span className="rounded-lg bg-teal-50 px-2 py-0.5 font-semibold text-teal-700">
+              {project.service_radius_km != null ? `SERVES ${project.service_radius_km} KM AROUND` : 'ALL OF OMAN'}
             </span>
             {project.verified && (
               <span className="flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-600">

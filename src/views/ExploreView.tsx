@@ -7,6 +7,7 @@ import {
   sortProjectsByUrgency,
   sortProjectsByRemaining,
   sortProjectsByNeed,
+  isWithinServiceArea,
 } from '@/lib/utils';
 import { CATEGORIES, getCategoryInfo } from '@/lib/constants';
 import { ProjectCard } from '@/components/ProjectCard';
@@ -70,18 +71,25 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
       }));
   }, [projects, userLocation, selectedCity]);
 
+  // Service radius only applies when we know where the donor actually is (Near Me).
+  const reachableProjects = useMemo(
+    () => (userLocation ? projectsWithDistance.filter((p) => isWithinServiceArea(p, p.distance)) : projectsWithDistance),
+    [projectsWithDistance, userLocation]
+  );
+  const outOfAreaCount = projectsWithDistance.length - reachableProjects.length;
+
   const sortedProjects = useMemo(() => {
     switch (sortMode) {
       case 'urgency':
-        return sortProjectsByUrgency(projectsWithDistance);
+        return sortProjectsByUrgency(reachableProjects);
       case 'remaining':
-        return sortProjectsByRemaining(projectsWithDistance);
+        return sortProjectsByRemaining(reachableProjects);
       case 'need':
-        return sortProjectsByNeed(projectsWithDistance);
+        return sortProjectsByNeed(reachableProjects);
       default:
-        return sortProjectsByDistance(projectsWithDistance);
+        return sortProjectsByDistance(reachableProjects);
     }
-  }, [projectsWithDistance, sortMode]);
+  }, [reachableProjects, sortMode]);
 
   const groupedByType = useMemo(() => {
     const groups: Record<string, ProjectWithDistance[]> = {};
@@ -313,7 +321,9 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
           </div>
           <h3 className="text-base font-bold text-slate-700">No projects found</h3>
           <p className="mt-1 max-w-sm text-sm text-slate-500">
-            {selectedCategory || selectedCity || searchQuery
+            {outOfAreaCount > 0
+              ? `${outOfAreaCount} ${outOfAreaCount === 1 ? 'post serves' : 'posts serve'} other areas but not your current location. Pick a city to browse them.`
+              : selectedCategory || selectedCity || searchQuery
               ? 'Try adjusting your filters — select a different category, city, or search term.'
               : 'Select a category or city to find nearby verified needs.'}
           </p>
@@ -342,6 +352,11 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
             <span className="font-bold text-slate-800">{sortedProjects.length}</span>{' '}
             verified {sortedProjects.length === 1 ? 'project' : 'projects'}{' '}
             {(userLocation || selectedCity) && 'near you'}
+            {outOfAreaCount > 0 && (
+              <span className="ml-1 text-slate-400">
+                · {outOfAreaCount} outside your area hidden
+              </span>
+            )}
           </div>
 
           <div className="space-y-6">
