@@ -11,7 +11,8 @@ import {
   deletePost,
   type PostInput,
 } from '@/lib/admin';
-import { formatOMR, facilityTypeLabel, getProgressPercent } from '@/lib/utils';
+import { formatOMR, facilityTypeLabel, getProgressPercent, statusLabel, facilityName, placeName } from '@/lib/utils';
+import { tr } from '@/lib/i18n';
 import { getCategoryInfo } from '@/lib/constants';
 import { PostFormModal } from '@/components/PostFormModal';
 import {
@@ -53,7 +54,7 @@ export function AdminDashboard() {
       setFacilities(facData);
       setPosts(postData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load admin data.');
+      setError(err instanceof Error ? err.message : tr('Could not load admin data.', 'تعذر تحميل بيانات الإدارة.'));
     } finally {
       setUsers(listProfiles());
       setLoading(false);
@@ -88,14 +89,14 @@ export function AdminDashboard() {
       await action();
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
+      setError(err instanceof Error ? err.message : tr('Something went wrong.', 'حدث خطأ ما.'));
     } finally {
       setBusyId(null);
     }
   };
 
   const handleDelete = (post: Project) => {
-    if (!window.confirm(`Delete "${post.title}"? This cannot be undone.`)) return;
+    if (!window.confirm(tr(`Delete "${post.title}"? This cannot be undone.`, `حذف "${post.title}"؟ لا يمكن التراجع عن هذا الإجراء.`))) return;
     runAction(post.id, () => deletePost(post.id));
   };
 
@@ -103,7 +104,7 @@ export function AdminDashboard() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
-        <p className="mt-3 text-sm text-slate-500">Loading admin dashboard...</p>
+        <p className="mt-3 text-sm text-slate-500">{tr('Loading admin dashboard...', 'جارٍ تحميل لوحة الإدارة...')}</p>
       </div>
     );
   }
@@ -116,8 +117,8 @@ export function AdminDashboard() {
             <Shield className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-800">Admin Panel</h1>
-            <p className="text-xs text-slate-500">Manage water posts, facilities, and users</p>
+            <h1 className="text-xl font-bold tracking-tight text-slate-800">{tr('Admin Panel', 'لوحة الإدارة')}</h1>
+            <p className="text-xs text-slate-500">{tr('Manage water posts, facilities, and users', 'إدارة منشورات المياه والمنشآت والمستخدمين')}</p>
           </div>
         </div>
         <button
@@ -125,16 +126,16 @@ export function AdminDashboard() {
           className="flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-700"
         >
           <Plus className="h-4 w-4" />
-          New water post
+          {tr('New water post', 'منشور مياه جديد')}
         </button>
       </div>
 
       <div className="mb-5 flex gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">
         {([
-          { key: 'overview', label: 'Overview' },
-          { key: 'posts', label: `Water Posts (${posts.length})` },
-          { key: 'facilities', label: `Facilities (${facilities.length})` },
-          { key: 'users', label: `Users (${users.length})` },
+          { key: 'overview', label: tr('Overview', 'نظرة عامة') },
+          { key: 'posts', label: `${tr('Water Posts', 'منشورات المياه')} (${posts.length})` },
+          { key: 'facilities', label: `${tr('Facilities', 'المنشآت')} (${facilities.length})` },
+          { key: 'users', label: `${tr('Users', 'المستخدمون')} (${users.length})` },
         ] as { key: Tab; label: string }[]).map((t) => (
           <button
             key={t.key}
@@ -157,14 +158,14 @@ export function AdminDashboard() {
 
       {tab === 'overview' && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          <StatCard icon={Droplets} label="Active Posts" value={stats.activePosts} color="bg-sky-50 text-sky-600" />
-          <StatCard icon={Wallet} label="Total Raised" value={formatOMR(stats.totalRaised)} color="bg-teal-50 text-teal-600" />
-          <StatCard icon={BadgeCheck} label="Verified Facilities" value={stats.verifiedFacilities} color="bg-emerald-50 text-emerald-600" />
-          <StatCard icon={Clock} label="Pending Verification" value={stats.pendingFacilities} color="bg-amber-50 text-amber-600" />
-          <StatCard icon={Building2} label="Total Facilities" value={stats.totalFacilities} color="bg-slate-100 text-slate-600" />
-          <StatCard icon={Users} label="Total Users" value={stats.totalUsers} color="bg-violet-50 text-violet-600" />
-          <StatCard icon={Shield} label="Admins" value={stats.admins} color="bg-red-50 text-red-600" />
-          <StatCard icon={Heart} label="Donors" value={stats.donors} color="bg-pink-50 text-pink-600" />
+          <StatCard icon={Droplets} label={tr('Active Posts', 'المنشورات النشطة')} value={stats.activePosts} color="bg-sky-50 text-sky-600" />
+          <StatCard icon={Wallet} label={tr('Total Raised', 'إجمالي المبالغ المجمعة')} value={formatOMR(stats.totalRaised)} color="bg-teal-50 text-teal-600" />
+          <StatCard icon={BadgeCheck} label={tr('Verified Facilities', 'المنشآت الموثقة')} value={stats.verifiedFacilities} color="bg-emerald-50 text-emerald-600" />
+          <StatCard icon={Clock} label={tr('Pending Verification', 'بانتظار التوثيق')} value={stats.pendingFacilities} color="bg-amber-50 text-amber-600" />
+          <StatCard icon={Building2} label={tr('Total Facilities', 'إجمالي المنشآت')} value={stats.totalFacilities} color="bg-slate-100 text-slate-600" />
+          <StatCard icon={Users} label={tr('Total Users', 'إجمالي المستخدمين')} value={stats.totalUsers} color="bg-violet-50 text-violet-600" />
+          <StatCard icon={Shield} label={tr('Admins', 'المديرون')} value={stats.admins} color="bg-red-50 text-red-600" />
+          <StatCard icon={Heart} label={tr('Donors', 'المتبرعون')} value={stats.donors} color="bg-pink-50 text-pink-600" />
         </div>
       )}
 
@@ -175,17 +176,25 @@ export function AdminDashboard() {
               <button
                 key={f}
                 onClick={() => setPostFilter(f)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
                   postFilter === f ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'
                 }`}
               >
-                {f}
+                {f === 'all' ? tr('All', 'الكل') : f === 'active' ? tr('Active', 'النشطة') : tr('Closed', 'المغلقة')}
               </button>
             ))}
           </div>
 
           {visiblePosts.length === 0 ? (
-            <EmptyState text={postFilter === 'all' ? 'No posts yet. Create the first water post.' : `No ${postFilter} posts.`} />
+            <EmptyState
+              text={
+                postFilter === 'all'
+                  ? tr('No posts yet. Create the first water post.', 'لا توجد منشورات بعد. أنشئ أول منشور مياه.')
+                  : postFilter === 'active'
+                    ? tr('No active posts.', 'لا توجد منشورات نشطة.')
+                    : tr('No closed posts.', 'لا توجد منشورات مغلقة.')
+              }
+            />
           ) : (
             <div className="space-y-2.5">
               {visiblePosts.map((p) => (
@@ -208,7 +217,7 @@ export function AdminDashboard() {
       {tab === 'facilities' && (
         <div className="space-y-2.5">
           {facilities.length === 0 ? (
-            <EmptyState text="No facilities registered yet." />
+            <EmptyState text={tr('No facilities registered yet.', 'لا توجد منشآت مسجلة بعد.')} />
           ) : (
             facilities.map((f) => (
               <div key={f.id} className="glass-card rounded-2xl p-4">
@@ -218,11 +227,11 @@ export function AdminDashboard() {
                       {f.type === 'mosque' ? <Landmark className="h-5 w-5" /> : <Building2 className="h-5 w-5" />}
                     </div>
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-bold text-slate-800">{f.name}</div>
+                      <div className="truncate text-sm font-bold text-slate-800">{facilityName(f)}</div>
                       <div className="truncate text-xs text-slate-500">
-                        {facilityTypeLabel(f.type)} · {f.governorate} · {f.area ?? f.wilayat ?? '—'}
+                        {facilityTypeLabel(f.type)} · {placeName(f.governorate)} · {placeName(f.area ?? f.wilayat) || '—'}
                       </div>
-                      {f.responsible_org && <div className="text-[10px] text-slate-400">Managed by: {f.responsible_org}</div>}
+                      {f.responsible_org && <div className="text-[10px] text-slate-400">{tr('Managed by:', 'تديرها:')} {f.responsible_org}</div>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -233,7 +242,7 @@ export function AdminDashboard() {
                         disabled={busyId === f.id}
                         onClick={() => runAction(f.id, () => setFacilityVerification(f.id, 'verified'))}
                       >
-                        <CheckCircle2 className="h-3.5 w-3.5" /> {f.verification_status === 'rejected' ? 'Re-approve' : 'Approve'}
+                        <CheckCircle2 className="h-3.5 w-3.5" /> {f.verification_status === 'rejected' ? tr('Re-approve', 'إعادة الاعتماد') : tr('Approve', 'اعتماد')}
                       </ActionButton>
                     ) : (
                       <ActionButton
@@ -241,7 +250,7 @@ export function AdminDashboard() {
                         disabled={busyId === f.id}
                         onClick={() => runAction(f.id, () => setFacilityVerification(f.id, 'rejected'))}
                       >
-                        <XCircle className="h-3.5 w-3.5" /> Revoke
+                        <XCircle className="h-3.5 w-3.5" /> {tr('Revoke', 'إلغاء التوثيق')}
                       </ActionButton>
                     )}
                   </div>
@@ -254,7 +263,7 @@ export function AdminDashboard() {
 
       {tab === 'users' && (
         <div className="space-y-2.5">
-          <p className="text-xs text-slate-500">Accounts are stored in this browser until the app has a server-side login.</p>
+          <p className="text-xs text-slate-500">{tr('Accounts are stored in this browser until the app has a server-side login.', 'تُحفظ الحسابات في هذا المتصفح إلى أن يتوفر تسجيل دخول عبر الخادم.')}</p>
           {users.map((u) => (
             <div key={u.id} className="glass-card rounded-2xl p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -264,7 +273,7 @@ export function AdminDashboard() {
                   </div>
                   <div>
                     <div className="text-sm font-bold text-slate-800">
-                      {u.full_name || 'Unknown'} {u.id === profile?.id && <span className="text-xs font-normal text-slate-400">(you)</span>}
+                      {u.full_name || tr('Unknown', 'غير معروف')} {u.id === profile?.id && <span className="text-xs font-normal text-slate-400">({tr('you', 'أنت')})</span>}
                     </div>
                     <div className="text-xs text-slate-500">{u.email}</div>
                   </div>
@@ -272,16 +281,16 @@ export function AdminDashboard() {
                 <select
                   value={u.role}
                   disabled={u.id === profile?.id}
-                  title={u.id === profile?.id ? "You can't change your own role" : undefined}
+                  title={u.id === profile?.id ? tr("You can't change your own role", 'لا يمكنك تغيير دورك') : undefined}
                   onChange={(e) => {
                     setUserRole(u.id, e.target.value as Profile['role']);
                     setUsers(listProfiles());
                   }}
                   className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-700 outline-none focus:border-teal-400 disabled:opacity-50"
                 >
-                  <option value="donor">Donor</option>
-                  <option value="organization">Organization</option>
-                  <option value="admin">Admin</option>
+                  <option value="donor">{tr('Donor', 'متبرع')}</option>
+                  <option value="organization">{tr('Organization', 'منظمة')}</option>
+                  <option value="admin">{tr('Admin', 'مدير')}</option>
                 </select>
               </div>
             </div>
@@ -334,15 +343,15 @@ function PostRow({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-bold text-slate-800">{post.title}</div>
-            <div className="truncate text-xs text-slate-500">{post.facility?.name ?? '—'}</div>
+            <div dir="auto" className="truncate text-sm font-bold text-slate-800">{post.title}</div>
+            <div className="truncate text-xs text-slate-500">{facilityName(post.facility) || '—'}</div>
             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-semibold">
               <span className={`rounded px-1.5 py-0.5 ${active ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
-                {post.status.toUpperCase()}
+                {statusLabel(post.status)}
               </span>
               <span className="flex items-center gap-0.5 rounded bg-teal-50 px-1.5 py-0.5 text-teal-700">
                 <MapPin className="h-3 w-3" />
-                {post.service_radius_km ? `${post.service_radius_km} km radius` : 'All of Oman'}
+                {post.service_radius_km ? tr(`${post.service_radius_km} km radius`, `نطاق ${post.service_radius_km} كم`) : tr('All of Oman', 'كل عُمان')}
               </span>
             </div>
           </div>
@@ -351,7 +360,7 @@ function PostRow({
         <div className="w-full sm:w-44">
           <div className="mb-1 flex justify-between text-[11px]">
             <span className="font-semibold text-slate-700">{formatOMR(post.collected_amount)}</span>
-            <span className="text-slate-400">of {formatOMR(post.target_amount)}</span>
+            <span className="text-slate-400">{tr(`of ${formatOMR(post.target_amount)}`, `من ${formatOMR(post.target_amount)}`)}</span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
             <div className="h-full rounded-full bg-teal-500" style={{ width: `${percent}%` }} />
@@ -359,13 +368,13 @@ function PostRow({
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">
-          <IconButton label="Edit" onClick={onEdit} disabled={busy}>
+          <IconButton label={tr('Edit', 'تعديل')} onClick={onEdit} disabled={busy}>
             <Pencil className="h-4 w-4" />
           </IconButton>
-          <IconButton label={active ? 'Close post' : 'Reopen post'} onClick={onToggle} disabled={busy}>
+          <IconButton label={active ? tr('Close post', 'إغلاق المنشور') : tr('Reopen post', 'إعادة فتح المنشور')} onClick={onToggle} disabled={busy}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : active ? <Archive className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
           </IconButton>
-          <IconButton label="Delete" onClick={onDelete} disabled={busy} danger>
+          <IconButton label={tr('Delete', 'حذف')} onClick={onDelete} disabled={busy} danger>
             <Trash2 className="h-4 w-4" />
           </IconButton>
         </div>
@@ -440,12 +449,12 @@ function StatCard({ icon: Icon, label, value, color }: { icon: typeof Shield; la
 
 function VerificationBadge({ status }: { status: string }) {
   if (status === 'verified') {
-    return <span className="flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-600"><BadgeCheck className="h-3 w-3" /> VERIFIED</span>;
+    return <span className="flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-600"><BadgeCheck className="h-3 w-3" /> {tr('VERIFIED', 'موثق')}</span>;
   }
   if (status === 'pending') {
-    return <span className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-600"><Clock className="h-3 w-3" /> PENDING</span>;
+    return <span className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-600"><Clock className="h-3 w-3" /> {tr('PENDING', 'قيد المراجعة')}</span>;
   }
-  return <span className="flex items-center gap-1 rounded-lg bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600"><XCircle className="h-3 w-3" /> REJECTED</span>;
+  return <span className="flex items-center gap-1 rounded-lg bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600"><XCircle className="h-3 w-3" /> {tr('REJECTED', 'مرفوض')}</span>;
 }
 
 function EmptyState({ text }: { text: string }) {

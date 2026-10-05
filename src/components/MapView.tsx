@@ -2,7 +2,19 @@ import type { ProjectWithDistance } from '@/lib/types';
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { getCategoryInfo } from '@/lib/constants';
+import { tr } from '@/lib/i18n';
+import { facilityName, formatKm } from '@/lib/utils';
+
+// Language-neutral marker glyphs (simplified Lucide paths).
+const MARKER_ICONS: Record<string, string> = {
+  water: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  mosque: '<path d="M3 22h18M6 18v-7M10 18v-7M14 18v-7M18 18v-7M12 2l8 5H4z"/>',
+  hospital: '<path d="M12 6v12M6 12h12"/>',
+};
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]!);
+}
 
 // Projects within this distance of the user count as "near me" when framing the map.
 const NEAR_RADIUS_KM = 25;
@@ -76,7 +88,7 @@ export function MapView({
       });
       const userMarker = L.marker([userLat, userLng], { icon: userIcon, zIndexOffset: 1000 })
         .addTo(map)
-        .bindTooltip('You are here', { permanent: true, direction: 'top', offset: [0, -10], className: 'user-tooltip' });
+        .bindTooltip(tr('You are here', 'أنت هنا'), { permanent: true, direction: 'top', offset: [0, -10], className: 'user-tooltip' });
       markersRef.current.push(radius, userMarker);
     }
 
@@ -87,7 +99,6 @@ export function MapView({
     };
 
     projects.forEach((project) => {
-      const cat = getCategoryInfo(project.category);
       const facility = project.facility;
       if (!facility) return;
 
@@ -107,7 +118,7 @@ export function MapView({
       }
 
       const icon = L.divIcon({
-        html: `<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:white">${cat.label.charAt(0)}</div>`,
+        html: `<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:white"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${MARKER_ICONS[project.category] ?? MARKER_ICONS.water}</svg></div>`,
         className: 'project-marker',
         iconSize: [28, 28],
         iconAnchor: [14, 14],
@@ -116,7 +127,7 @@ export function MapView({
       const marker = L.marker([facility.lat, facility.lng], { icon })
         .addTo(map)
         .bindPopup(
-          `<div style="min-width:180px"><b>${project.title}</b><br/><span style="color:#64748b;font-size:12px">${facility.name}</span><br/><span style="color:#0d9488;font-weight:600">${project.distance.toFixed(1)} km away</span><br/><button id="map-donate-${project.id}" style="margin-top:6px;background:#0d9488;color:white;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px">View Details</button></div>`
+          `<div dir="auto" style="min-width:180px"><b>${escapeHtml(project.title)}</b><br/><span style="color:#64748b;font-size:12px">${escapeHtml(facilityName(facility))}</span><br/><span style="color:#0d9488;font-weight:600">${escapeHtml(tr(`${formatKm(project.distance)} away`, `على بعد ${formatKm(project.distance)}`))}</span><br/><button id="map-donate-${project.id}" style="margin-top:6px;background:#0d9488;color:white;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px">${escapeHtml(tr('View Details', 'عرض التفاصيل'))}</button></div>`
         );
 
       marker.on('popupopen', () => {
@@ -149,5 +160,6 @@ export function MapView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projects, userLat, userLng]);
 
-  return <div ref={mapRef} className="h-full w-full rounded-2xl" />;
+  // Leaflet expects an LTR container; popups set their own direction.
+  return <div ref={mapRef} dir="ltr" className="h-full w-full rounded-2xl" />;
 }

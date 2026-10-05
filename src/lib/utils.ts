@@ -1,7 +1,42 @@
 import type { Project, ProjectWithDistance, Facility } from './types';
+import { tr, isRtl } from './i18n';
 
 export function formatOMR(amount: number): string {
-  return `OMR ${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 })}`;
+  const value = amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+  return isRtl() ? `${value} ر.ع.` : `OMR ${value}`;
+}
+
+/** Format a distance in km with the localized unit. */
+export function formatKm(km: number, digits = 1): string {
+  return `${km.toFixed(digits)} ${tr('km', 'كم')}`;
+}
+
+// Arabic names for the places in the seed data; anything unknown falls back to English.
+const PLACE_AR: Record<string, string> = {
+  Muscat: 'مسقط',
+  Salalah: 'صلالة',
+  Sohar: 'صحار',
+  Nizwa: 'نزوى',
+  Sur: 'صور',
+  Dhofar: 'ظفار',
+  'North Batinah': 'شمال الباطنة',
+  Dakhiliyah: 'الداخلية',
+  'South Sharqiyah': 'جنوب الشرقية',
+  'Al Khuwair': 'الخوير',
+  Seeb: 'السيب',
+  Haffa: 'الحافة',
+  'Seeb, Muscat': 'السيب، مسقط',
+  'Haffa, Salalah': 'الحافة، صلالة',
+};
+
+export function placeName(name: string | null | undefined): string {
+  if (!name) return '';
+  return isRtl() ? PLACE_AR[name] ?? name : name;
+}
+
+export function facilityName(facility: Pick<Facility, 'name' | 'name_arabic'> | null | undefined): string {
+  if (!facility) return '';
+  return isRtl() && facility.name_arabic ? facility.name_arabic : facility.name;
 }
 
 export function calculateDistance(
@@ -59,12 +94,41 @@ export function sortProjectsByNeed(projects: ProjectWithDistance[]): ProjectWith
 export function facilityTypeLabel(type: Facility['type']): string {
   switch (type) {
     case 'mosque':
-      return 'Mosque';
+      return tr('Mosque', 'مسجد');
     case 'hospital':
-      return 'Hospital';
+      return tr('Hospital', 'مستشفى');
     case 'facility':
-      return 'Community Facility';
+      return tr('Community Facility', 'مرفق مجتمعي');
   }
+}
+
+export function needLevelLabel(level: Project['need_level']): string {
+  const labels = {
+    critical: tr('Critical', 'حرج'),
+    high: tr('High', 'مرتفع'),
+    medium: tr('Medium', 'متوسط'),
+    low: tr('Low', 'منخفض'),
+  };
+  return labels[level] ?? level;
+}
+
+export function urgencyLabel(urgency: Project['urgency']): string {
+  const labels = {
+    critical: tr('Critical', 'حرج'),
+    urgent: tr('Urgent', 'عاجل'),
+    normal: tr('Normal', 'عادي'),
+  };
+  return labels[urgency] ?? urgency;
+}
+
+export function statusLabel(status: Project['status']): string {
+  const labels = {
+    active: tr('Active', 'نشط'),
+    funded: tr('Funded', 'مكتمل التمويل'),
+    completed: tr('Completed', 'منتهٍ'),
+    cancelled: tr('Cancelled', 'ملغى'),
+  };
+  return labels[status] ?? status;
 }
 
 export function needLevelColor(level: Project['need_level']): string {
@@ -93,13 +157,13 @@ export function urgencyColor(urgency: Project['urgency']): string {
 
 export function waterTypeLabel(type: string): string {
   const labels: Record<string, string> = {
-    drinking: 'Drinking Water',
-    dispenser: 'Water Dispensers',
-    tank: 'Water Tanks',
-    supply: 'Water Supply',
-    filtration: 'Filtration System',
-    maintenance: 'Water System Maintenance',
-    project: 'Water Project',
+    drinking: tr('Drinking Water', 'مياه الشرب'),
+    dispenser: tr('Water Dispensers', 'موزعات المياه'),
+    tank: tr('Water Tanks', 'خزانات المياه'),
+    supply: tr('Water Supply', 'إمداد المياه'),
+    filtration: tr('Filtration System', 'نظام الترشيح'),
+    maintenance: tr('Water System Maintenance', 'صيانة شبكة المياه'),
+    project: tr('Water Project', 'مشروع مياه'),
   };
   return labels[type] || type;
 }

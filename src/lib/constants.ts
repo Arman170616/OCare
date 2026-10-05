@@ -9,6 +9,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { tr } from './i18n';
 
 export interface CategoryInfo {
   key: Category;
@@ -19,9 +20,9 @@ export interface CategoryInfo {
 }
 
 export const CATEGORIES: CategoryInfo[] = [
-  { key: 'water', label: 'Water', icon: Droplets, color: 'text-sky-600', tint: 'bg-sky-50 text-sky-600' },
-  { key: 'mosque', label: 'Mosques', icon: Landmark, color: 'text-teal-600', tint: 'bg-teal-50 text-teal-600' },
-  { key: 'hospital', label: 'Hospitals', icon: Building2, color: 'text-rose-600', tint: 'bg-rose-50 text-rose-600' },
+  { key: 'water', get label() { return tr('Water', 'المياه'); }, icon: Droplets, color: 'text-sky-600', tint: 'bg-sky-50 text-sky-600' },
+  { key: 'mosque', get label() { return tr('Mosques', 'المساجد'); }, icon: Landmark, color: 'text-teal-600', tint: 'bg-teal-50 text-teal-600' },
+  { key: 'hospital', get label() { return tr('Hospitals', 'المستشفيات'); }, icon: Building2, color: 'text-rose-600', tint: 'bg-rose-50 text-rose-600' },
 ];
 
 export function getCategoryInfo(key: Category): CategoryInfo {
@@ -33,19 +34,19 @@ export const DONATION_PRESETS = [5, 10, 25, 50, 100];
 export const SPONSOR_PRESETS = [5, 10, 25];
 
 export const SPONSOR_FREQUENCIES = [
-  { key: 'one-time', label: 'One-time' },
-  { key: 'weekly', label: 'Weekly' },
-  { key: 'monthly', label: 'Monthly' },
-  { key: 'custom', label: 'Custom' },
+  { key: 'one-time', get label() { return tr('One-time', 'مرة واحدة'); } },
+  { key: 'weekly', get label() { return tr('Weekly', 'أسبوعي'); } },
+  { key: 'monthly', get label() { return tr('Monthly', 'شهري'); } },
+  { key: 'custom', get label() { return tr('Custom', 'مخصص'); } },
 ] as const;
 
 export type DeliveryStatus = 'received' | 'preparing' | 'on_the_way' | 'delivered';
 
 export const DELIVERY_STEPS: { key: DeliveryStatus; label: string; icon: LucideIcon }[] = [
-  { key: 'received', label: 'Donation Received', icon: Heart },
-  { key: 'preparing', label: 'Preparing', icon: Package },
-  { key: 'on_the_way', label: 'On the Way', icon: Truck },
-  { key: 'delivered', label: 'Delivered', icon: CheckCircle2 },
+  { key: 'received', get label() { return tr('Donation Received', 'تم استلام التبرع'); }, icon: Heart },
+  { key: 'preparing', get label() { return tr('Preparing', 'قيد التجهيز'); }, icon: Package },
+  { key: 'on_the_way', get label() { return tr('On the Way', 'في الطريق'); }, icon: Truck },
+  { key: 'delivered', get label() { return tr('Delivered', 'تم التسليم'); }, icon: CheckCircle2 },
 ];
 
 export function deliveryStepIndex(status: DeliveryStatus): number {

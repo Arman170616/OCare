@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { Profile } from './auth-types';
-import { getStoredUsers, writeStoredUsers } from './users';
+import { getStoredUsers, writeStoredUsers, findUserByLogin } from './users';
+import { tr } from './i18n';
 
 interface AuthContextValue {
   profile: Profile | null;
@@ -36,14 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const normalizedEmail = email.trim().toLowerCase();
-    const users = getStoredUsers();
-    const found = users.find(
-      (user) => user.email.toLowerCase() === normalizedEmail && user.password === password
-    );
+    const found = findUserByLogin(email, password);
 
     if (!found) {
-      return { error: 'Invalid email or password.' };
+      return { error: tr('Invalid email, username or password.', 'البريد الإلكتروني أو اسم المستخدم أو كلمة المرور غير صحيحة.') };
     }
 
     const nextProfile: Profile = {
@@ -68,13 +65,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const exists = users.some((user) => user.email.toLowerCase() === normalizedEmail);
 
       if (exists) {
-        return { error: 'An account with this email already exists.' };
+        return { error: tr('An account with this email already exists.', 'يوجد حساب مسجل بهذا البريد الإلكتروني.') };
       }
 
       const nextProfile: Profile = {
         id: `user-${Date.now()}`,
         email: normalizedEmail,
-        full_name: fullName.trim() || 'New donor',
+        full_name: fullName.trim() || tr('New donor', 'متبرع جديد'),
         role: (role === 'admin' ? 'donor' : role === 'organization' ? 'organization' : 'donor') as Profile['role'],
         organization_name: orgName?.trim() || null,
         phone: null,

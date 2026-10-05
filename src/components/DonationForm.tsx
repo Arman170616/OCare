@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { AlertCircle, X } from 'lucide-react';
 import { formatOMR, isValidAmount } from '@/lib/utils';
+import { tr } from '@/lib/i18n';
 
 // Shared form pieces so every donate screen (project modal, water flow) looks the same.
 
@@ -45,8 +46,8 @@ export function AmountPicker({
       </div>
       {allowCustom && (
         <div className="relative mt-2">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">
-            OMR
+          <span className="absolute start-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">
+            {tr('OMR', 'ر.ع.')}
           </span>
           <input
             type="number"
@@ -54,8 +55,8 @@ export function AmountPicker({
             step="any"
             value={customAmount}
             onChange={(e) => onCustomChange(e.target.value)}
-            placeholder="Custom amount"
-            className={`${inputClass} pl-12`}
+            placeholder={tr('Custom amount', 'مبلغ مخصص')}
+            className={`${inputClass} ps-12`}
           />
         </div>
       )}
@@ -78,19 +79,19 @@ export function DonorFields({
     <div className="mb-4 space-y-3">
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-          Your name <span className="font-normal text-slate-400">(optional)</span>
+          {tr('Your name', 'اسمك')} <span className="font-normal text-slate-400">({tr('optional', 'اختياري')})</span>
         </label>
         <input
           type="text"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
-          placeholder="Anonymous donor"
+          placeholder={tr('Anonymous donor', 'فاعل خير')}
           className={inputClass}
         />
       </div>
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-          Email <span className="font-normal text-slate-400">(for receipt)</span>
+          {tr('Email', 'البريد الإلكتروني')} <span className="font-normal text-slate-400">({tr('for receipt', 'لإرسال الإيصال')})</span>
         </label>
         <input
           type="email"
@@ -117,7 +118,7 @@ export function FormError({ message }: { message: string }) {
 export function DonationTotal({ amount }: { amount: number }) {
   return (
     <div className="mb-4 flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-      <span className="text-sm font-medium text-slate-600">Total donation</span>
+      <span className="text-sm font-medium text-slate-600">{tr('Total donation', 'إجمالي التبرع')}</span>
       <span className="text-lg font-bold text-teal-600">
         {formatOMR(isValidAmount(amount) ? amount : 0)}
       </span>
@@ -141,7 +142,7 @@ export function SubmitButton({
       disabled={submitting || !valid}
       className="w-full rounded-xl bg-teal-600 px-6 py-3.5 font-semibold text-white transition-all hover:bg-teal-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {submitting ? 'Processing...' : `Donate ${formatOMR(valid ? amount : 0)}`}
+      {submitting ? tr('Processing...', 'جارٍ المعالجة...') : tr(`Donate ${formatOMR(valid ? amount : 0)}`, `تبرّع بمبلغ ${formatOMR(valid ? amount : 0)}`)}
     </button>
   );
 }
@@ -168,7 +169,7 @@ export function ModalShell({
           {header && <div className="min-w-0 flex-1">{header}</div>}
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label={tr('Close', 'إغلاق')}
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100"
           >
             <X className="h-5 w-5" />

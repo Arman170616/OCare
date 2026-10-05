@@ -3,7 +3,8 @@ import { useAuth } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
 import type { City, Facility } from '@/lib/types';
 import { DONATION_PRESETS } from '@/lib/constants';
-import { facilityTypeLabel, resolveAmount, isValidAmount } from '@/lib/utils';
+import { facilityTypeLabel, resolveAmount, isValidAmount, facilityName, placeName } from '@/lib/utils';
+import { tr } from '@/lib/i18n';
 import { ChevronLeft, ChevronRight, CheckCircle2, MapPin, Droplets, Loader2 } from 'lucide-react';
 import { FacilitySelector } from './FacilitySelector';
 import { DonationTracker } from './DonationTracker';
@@ -24,11 +25,11 @@ interface DonationFlowProps {
 type Step = 'type' | 'location' | 'facility' | 'amount' | 'tracking';
 
 const STEPS: { key: Step; label: string }[] = [
-  { key: 'type', label: 'Donation type' },
-  { key: 'location', label: 'Location' },
-  { key: 'facility', label: 'Facility' },
-  { key: 'amount', label: 'Amount' },
-  { key: 'tracking', label: 'Tracking' },
+  { key: 'type', get label() { return tr('Donation type', 'نوع التبرع'); } },
+  { key: 'location', get label() { return tr('Location', 'الموقع'); } },
+  { key: 'facility', get label() { return tr('Facility', 'المنشأة'); } },
+  { key: 'amount', get label() { return tr('Amount', 'المبلغ'); } },
+  { key: 'tracking', get label() { return tr('Tracking', 'التتبع'); } },
 ];
 
 export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
@@ -55,7 +56,7 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
     setLoading(true);
     apiFetch<City[]>('/api/cities')
       .then((data) => setCities(data || []))
-      .catch(() => setError('Failed to load cities'))
+      .catch(() => setError(tr('Failed to load cities', 'تعذر تحميل المدن')))
       .finally(() => setLoading(false));
   }, []);
 
@@ -64,7 +65,7 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
     setLoading(true);
     apiFetch<Facility[]>(`/api/facilities?city_id=${city.id}&types=mosque,hospital`)
       .then((data) => setFacilities(data || []))
-      .catch(() => setError('Failed to load facilities'))
+      .catch(() => setError(tr('Failed to load facilities', 'تعذر تحميل المنشآت')))
       .finally(() => setLoading(false));
   }, [city]);
 
@@ -79,11 +80,11 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
 
   const handleSubmit = async () => {
     if (!facility) {
-      setError('Please choose a facility.');
+      setError(tr('Please choose a facility.', 'يرجى اختيار منشأة.'));
       return;
     }
     if (!isValidAmount(finalAmount)) {
-      setError('Please enter a valid donation amount.');
+      setError(tr('Please enter a valid donation amount.', 'يرجى إدخال مبلغ تبرع صحيح.'));
       return;
     }
 
@@ -112,7 +113,7 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
       setReceipt({ id: response.id, number: response.receipt_number });
       goTo('tracking');
     } catch (err) {
-      setError(err instanceof Error && err.message ? err.message : 'Donation failed. Please try again.');
+      setError(err instanceof Error && err.message ? err.message : tr('Donation failed. Please try again.', 'فشل التبرع. يرجى المحاولة مرة أخرى.'));
     } finally {
       setSubmitting(false);
     }
@@ -125,9 +126,9 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
 
   const header = (
     <>
-      <h2 className="text-base font-bold text-slate-800">Water Donation</h2>
+      <h2 className="text-base font-bold text-slate-800">{tr('Water Donation', 'التبرع بالمياه')}</h2>
       <p className="text-xs text-slate-500">
-        Step {stepIndex + 1} of {STEPS.length} · {STEPS[stepIndex].label}
+        {tr(`Step ${stepIndex + 1} of ${STEPS.length}`, `الخطوة ${stepIndex + 1} من ${STEPS.length}`)} · {STEPS[stepIndex].label}
       </p>
       <div className="mt-3 flex gap-1">
         {STEPS.map((s, i) => (
@@ -148,18 +149,18 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
             onClick={goBack}
             className="mb-3 flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700"
           >
-            <ChevronLeft className="h-4 w-4" />
-            Back
+            <ChevronLeft className="h-4 w-4 rtl:-scale-x-100" />
+            {tr('Back', 'رجوع')}
           </button>
         )}
 
         {step === 'type' && (
           <>
-            <StepTitle>What would you like to donate?</StepTitle>
+            <StepTitle>{tr('What would you like to donate?', 'بماذا تود أن تتبرع؟')}</StepTitle>
             <OptionButton
               icon={<Droplets className="h-5 w-5" />}
-              title="Water Support"
-              subtitle="Provide clean water to mosques and hospitals"
+              title={tr('Water Support', 'دعم المياه')}
+              subtitle={tr('Provide clean water to mosques and hospitals', 'وفّر مياهًا نظيفة للمساجد والمستشفيات')}
               onClick={() => goTo('location')}
             />
           </>
@@ -167,9 +168,9 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
 
         {step === 'location' && (
           <>
-            <StepTitle>Where would you like to help?</StepTitle>
+            <StepTitle>{tr('Where would you like to help?', 'أين تود أن تساعد؟')}</StepTitle>
             {loading ? (
-              <Loading text="Loading cities..." />
+              <Loading text={tr('Loading cities...', 'جارٍ تحميل المدن...')} />
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 {cities.map((c) => (
@@ -180,7 +181,7 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
                       setFacility(null);
                       goTo('facility');
                     }}
-                    className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors ${
+                    className={`flex items-center gap-2.5 rounded-xl border p-3 text-start transition-colors ${
                       city?.id === c.id
                         ? 'border-teal-500 bg-teal-50'
                         : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'
@@ -188,8 +189,8 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
                   >
                     <MapPin className="h-4 w-4 shrink-0 text-teal-600" />
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold text-slate-800">{c.name}</div>
-                      <div className="truncate text-xs text-slate-500">{c.governorate}</div>
+                      <div className="truncate text-sm font-semibold text-slate-800">{placeName(c.name)}</div>
+                      <div className="truncate text-xs text-slate-500">{placeName(c.governorate)}</div>
                     </div>
                   </button>
                 ))}
@@ -200,11 +201,11 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
 
         {step === 'facility' && (
           <>
-            <StepTitle>Select a facility in {city?.name}</StepTitle>
+            <StepTitle>{tr(`Select a facility in ${city?.name ?? ''}`, `اختر منشأة في ${placeName(city?.name)}`)}</StepTitle>
             {loading ? (
-              <Loading text="Loading facilities..." />
+              <Loading text={tr('Loading facilities...', 'جارٍ تحميل المنشآت...')} />
             ) : facilities.length === 0 ? (
-              <p className="py-8 text-center text-sm text-slate-500">No verified facilities in this city yet.</p>
+              <p className="py-8 text-center text-sm text-slate-500">{tr('No verified facilities in this city yet.', 'لا توجد منشآت موثقة في هذه المدينة بعد.')}</p>
             ) : (
               <div className="space-y-2">
                 {facilities.map((f) => (
@@ -226,15 +227,15 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
         {step === 'amount' && facility && (
           <>
             <div className="mb-4 flex items-center gap-2 rounded-xl bg-teal-50/70 px-3 py-2 text-xs text-teal-700">
-              <span className="font-semibold">{facility.name}</span>
+              <span className="font-semibold">{facilityName(facility)}</span>
               <span>·</span>
               <span>{facilityTypeLabel(facility.type)}</span>
               <span>·</span>
-              <span>{city?.name}</span>
+              <span>{placeName(city?.name)}</span>
             </div>
 
             <AmountPicker
-              label="Choose amount"
+              label={tr('Choose amount', 'اختر المبلغ')}
               presets={DONATION_PRESETS}
               amount={amount}
               customAmount={customAmount}
@@ -264,11 +265,11 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
               <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
                 <CheckCircle2 className="h-7 w-7 text-emerald-600" />
               </div>
-              <h3 className="text-lg font-bold text-slate-800">Donation Received!</h3>
-              <p className="text-sm text-slate-600">Thank you for supporting {facility?.name}.</p>
+              <h3 className="text-lg font-bold text-slate-800">{tr('Donation Received!', 'تم استلام تبرعك!')}</h3>
+              <p className="text-sm text-slate-600">{tr(`Thank you for supporting ${facility?.name ?? ''}.`, `شكرًا لدعمك ${facilityName(facility)}.`)}</p>
             </div>
             <div className="mb-4 flex justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm">
-              <span className="text-slate-500">Receipt No.</span>
+              <span className="text-slate-500">{tr('Receipt No.', 'رقم الإيصال')}</span>
               <span className="font-mono font-semibold text-slate-700">{receipt.number}</span>
             </div>
             <DonationTracker donationId={receipt.id} />
@@ -276,7 +277,7 @@ export function DonationFlow({ onClose, onComplete }: DonationFlowProps) {
               onClick={handleClose}
               className="mt-4 w-full rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-teal-700"
             >
-              Done
+              {tr('Done', 'تم')}
             </button>
           </>
         )}
@@ -314,7 +315,7 @@ function OptionButton({
   return (
     <button
       onClick={onClick}
-      className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-4 text-left transition-colors hover:border-teal-300 hover:bg-slate-50"
+      className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-4 text-start transition-colors hover:border-teal-300 hover:bg-slate-50"
     >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
         {icon}
@@ -323,7 +324,7 @@ function OptionButton({
         <div className="text-sm font-semibold text-slate-800">{title}</div>
         <div className="text-xs text-slate-500">{subtitle}</div>
       </div>
-      <ChevronRight className="h-4 w-4 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-teal-500" />
+      <ChevronRight className="h-4 w-4 text-slate-300 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5 group-hover:text-teal-500" />
     </button>
   );
 }

@@ -2,16 +2,18 @@ import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import type { Donation } from '@/lib/types';
 import { Package, Truck, MapPin, CheckCircle2, Loader } from 'lucide-react';
+import { tr, locale } from '@/lib/i18n';
+import { formatOMR, facilityName } from '@/lib/utils';
 
 interface DonationTrackerProps {
   donationId: string;
 }
 
 const statusSteps = [
-  { key: 'received', label: 'Donation Received', icon: CheckCircle2, color: 'text-teal-600' },
-  { key: 'preparing', label: 'Preparing', icon: Package, color: 'text-blue-600' },
-  { key: 'on_the_way', label: 'On The Way', icon: Truck, color: 'text-amber-600' },
-  { key: 'delivered', label: 'Delivered', icon: MapPin, color: 'text-green-600' },
+  { key: 'received', get label() { return tr('Donation Received', 'تم استلام التبرع'); }, icon: CheckCircle2, color: 'text-teal-600' },
+  { key: 'preparing', get label() { return tr('Preparing', 'قيد التجهيز'); }, icon: Package, color: 'text-blue-600' },
+  { key: 'on_the_way', get label() { return tr('On the Way', 'في الطريق'); }, icon: Truck, color: 'text-amber-600' },
+  { key: 'delivered', get label() { return tr('Delivered', 'تم التسليم'); }, icon: MapPin, color: 'text-green-600' },
 ];
 
 export function DonationTracker({ donationId }: DonationTrackerProps) {
@@ -29,7 +31,7 @@ export function DonationTracker({ donationId }: DonationTrackerProps) {
         }
       } catch (err) {
         console.error('Failed to load donation:', err);
-        setError('Failed to load tracking information');
+        setError(tr('Failed to load tracking information', 'تعذر تحميل معلومات التتبع'));
       } finally {
         setLoading(false);
       }
@@ -45,7 +47,7 @@ export function DonationTracker({ donationId }: DonationTrackerProps) {
     return (
       <div className="text-center py-8">
         <Loader className="w-8 h-8 text-teal-600 mx-auto animate-spin" />
-        <p className="text-gray-600 mt-2">Loading tracking information...</p>
+        <p className="text-gray-600 mt-2">{tr('Loading tracking information...', 'جارٍ تحميل معلومات التتبع...')}</p>
       </div>
     );
   }
@@ -53,7 +55,7 @@ export function DonationTracker({ donationId }: DonationTrackerProps) {
   if (error || !donation) {
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-        {error || 'Could not load tracking information'}
+        {error || tr('Could not load tracking information', 'تعذر تحميل معلومات التتبع')}
       </div>
     );
   }
@@ -65,7 +67,7 @@ export function DonationTracker({ donationId }: DonationTrackerProps) {
       {/* Status Timeline */}
       <div className="relative">
         {/* Timeline Line */}
-        <div className="absolute left-6 top-12 bottom-0 w-1 bg-gray-200" />
+        <div className="absolute start-6 top-12 bottom-0 w-1 bg-gray-200" />
 
         {/* Status Steps */}
         <div className="space-y-6">
@@ -99,11 +101,11 @@ export function DonationTracker({ donationId }: DonationTrackerProps) {
                     {step.label}
                   </h4>
                   {isCurrent && (
-                    <p className="text-sm text-teal-600 mt-1">Currently at this stage</p>
+                    <p className="text-sm text-teal-600 mt-1">{tr('Currently at this stage', 'المرحلة الحالية')}</p>
                   )}
                   {isCompleted && index < currentStatusIndex && (
                     <p className="text-xs text-gray-500 mt-1">
-                      {new Date(donation.delivery_updated_at).toLocaleDateString()}
+                      {new Date(donation.delivery_updated_at).toLocaleDateString(locale())}
                     </p>
                   )}
                 </div>
@@ -116,25 +118,30 @@ export function DonationTracker({ donationId }: DonationTrackerProps) {
       {/* Donation Details */}
       <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">Donation Amount</span>
-          <span className="font-semibold text-gray-900">{donation.amount.toFixed(3)} {donation.currency}</span>
+          <span className="text-sm text-gray-600">{tr('Donation Amount', 'مبلغ التبرع')}</span>
+          <span className="font-semibold text-gray-900">{formatOMR(donation.amount)}</span>
         </div>
         {donation.project && (
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Facility</span>
-            <span className="font-semibold text-gray-900">{donation.project.facility?.name || 'N/A'}</span>
+            <span className="text-sm text-gray-600">{tr('Facility', 'المنشأة')}</span>
+            <span className="font-semibold text-gray-900">{facilityName(donation.project.facility) || '—'}</span>
           </div>
         )}
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">Receipt #</span>
+          <span className="text-sm text-gray-600">{tr('Receipt #', 'رقم الإيصال')}</span>
           <span className="font-mono text-sm text-gray-900">{donation.receipt_number}</span>
         </div>
       </div>
 
       {/* Help Text */}
       <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
-        <p className="font-semibold mb-1">💡 Track Your Donation</p>
-        <p>Your donation status updates automatically. The water will be delivered to the facility and we'll update you every step of the way.</p>
+        <p className="font-semibold mb-1">{tr('Track Your Donation', 'تتبّع تبرعك')}</p>
+        <p>
+          {tr(
+            "Your donation status updates automatically. The water will be delivered to the facility and we'll update you every step of the way.",
+            'تُحدَّث حالة تبرعك تلقائيًا. سيتم توصيل المياه إلى المنشأة وسنُطلعك على كل مرحلة.'
+          )}
+        </p>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { Sparkles, Mail, Lock, User, Building2, Heart, Shield, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
+import { Sparkles, Mail, Lock, User, Building2, Heart, Shield, ArrowRight, AlertCircle, Loader2, Languages } from 'lucide-react';
+import { tr, getLang, setLang } from '@/lib/i18n';
 
 export function AuthScreen() {
   const { signIn, signUp } = useAuth();
@@ -22,12 +23,12 @@ export function AuthScreen() {
 
     if (mode === 'signup') {
       if (password.length < 6) {
-        setError('Password must be at least 6 characters.');
+        setError(tr('Password must be at least 6 characters.', 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.'));
         setLoading(false);
         return;
       }
       if (role === 'organization' && !orgName.trim()) {
-        setError('Please enter your organization name.');
+        setError(tr('Please enter your organization name.', 'يرجى إدخال اسم المنظمة.'));
         setLoading(false);
         return;
       }
@@ -43,7 +44,7 @@ export function AuthScreen() {
         setLoading(false);
         return;
       }
-      setInfo('Account created! You can now sign in with your email and password.');
+      setInfo(tr('Account created! You can now sign in with your email and password.', 'تم إنشاء الحساب! يمكنك الآن تسجيل الدخول ببريدك الإلكتروني وكلمة المرور.'));
       setMode('signin');
       setPassword('');
       setLoading(false);
@@ -60,20 +61,27 @@ export function AuthScreen() {
   };
 
   const roleOptions = [
-    { key: 'donor' as const, label: 'Donor', icon: Heart, desc: 'Donate to verified projects near you' },
-    { key: 'organization' as const, label: 'Organization', icon: Building2, desc: 'Manage facilities and post projects' },
-    { key: 'admin' as const, label: 'Admin', icon: Shield, desc: 'Verify facilities and manage the platform' },
+    { key: 'donor' as const, label: tr('Donor', 'متبرع'), icon: Heart, desc: tr('Donate to verified projects near you', 'تبرّع لمشاريع موثقة بالقرب منك') },
+    { key: 'organization' as const, label: tr('Organization', 'منظمة'), icon: Building2, desc: tr('Manage facilities and post projects', 'أدر المنشآت وانشر المشاريع') },
+    { key: 'admin' as const, label: tr('Admin', 'مدير'), icon: Shield, desc: tr('Verify facilities and manage the platform', 'وثّق المنشآت وأدر المنصة') },
   ];
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-8">
+    <div className="relative flex min-h-screen items-center justify-center px-4 py-8">
+      <button
+        onClick={() => setLang(getLang() === 'ar' ? 'en' : 'ar')}
+        className="absolute end-4 top-4 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+      >
+        <Languages className="h-3.5 w-3.5" />
+        {getLang() === 'ar' ? 'English' : 'العربية'}
+      </button>
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center">
           <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-600 text-white">
             <Sparkles className="h-7 w-7" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-800">OmanCare</h1>
-          <p className="mt-1 text-sm text-slate-500">Donate Where Help Is Needed</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-800">{tr('OmanCare', 'عُمان كير')}</h1>
+          <p className="mt-1 text-sm text-slate-500">{tr('Donate Where Help Is Needed', 'تبرّع حيث تشتد الحاجة')}</p>
         </div>
 
         <div className="glass-card rounded-3xl p-6">
@@ -84,7 +92,7 @@ export function AuthScreen() {
                 mode === 'signin' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500'
               }`}
             >
-              Sign In
+              {tr('Sign In', 'تسجيل الدخول')}
             </button>
             <button
               onClick={() => { setMode('signup'); setError(''); }}
@@ -92,7 +100,7 @@ export function AuthScreen() {
                 mode === 'signup' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500'
               }`}
             >
-              Create Account
+              {tr('Create Account', 'إنشاء حساب')}
             </button>
           </div>
 
@@ -100,22 +108,22 @@ export function AuthScreen() {
             {mode === 'signup' && (
               <>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">Full name</label>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">{tr('Full name', 'الاسم الكامل')}</label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <User className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Your name"
+                      placeholder={tr('Your name', 'اسمك')}
                       required
-                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 ps-10 pe-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">I want to register as</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">{tr('I want to register as', 'أرغب بالتسجيل بصفتي')}</label>
                   <div className="grid grid-cols-3 gap-2">
                     {roleOptions.map((opt) => {
                       const Icon = opt.icon;
@@ -143,16 +151,16 @@ export function AuthScreen() {
 
                 {role === 'organization' && (
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-600">Organization name</label>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">{tr('Organization name', 'اسم المنظمة')}</label>
                     <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                      <Building2 className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                       <input
                         type="text"
                         value={orgName}
                         onChange={(e) => setOrgName(e.target.value)}
-                        placeholder="e.g. Salalah Charity Society"
+                        placeholder={tr('e.g. Salalah Charity Society', 'مثال: جمعية صلالة الخيرية')}
                         required
-                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 ps-10 pe-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                       />
                     </div>
                   </div>
@@ -161,31 +169,35 @@ export function AuthScreen() {
             )}
 
             <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Email</label>
+              <label className="mb-1 block text-xs font-semibold text-slate-600">
+                {mode === 'signin' ? tr('Email or username', 'البريد الإلكتروني أو اسم المستخدم') : tr('Email', 'البريد الإلكتروني')}
+              </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Mail className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
-                  type="email"
+                  type={mode === 'signin' ? 'text' : 'email'}
+                  autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
+                  placeholder={mode === 'signin' ? 'admin / your@email.com' : 'your@email.com'}
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 ps-10 pe-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold text-slate-600">Password</label>
+              <label className="mb-1 block text-xs font-semibold text-slate-600">{tr('Password', 'كلمة المرور')}</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Lock className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   type="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 ps-10 pe-4 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 />
               </div>
             </div>
@@ -206,8 +218,8 @@ export function AuthScreen() {
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <>
-                  {mode === 'signin' ? 'Sign In' : 'Create Account'}
-                  <ArrowRight className="h-4 w-4" />
+                  {mode === 'signin' ? tr('Sign In', 'تسجيل الدخول') : tr('Create Account', 'إنشاء حساب')}
+                  <ArrowRight className="h-4 w-4 rtl:-scale-x-100" />
                 </>
               )}
             </button>
@@ -215,7 +227,7 @@ export function AuthScreen() {
         </div>
 
         <p className="mt-4 text-center text-xs text-slate-400">
-          OmanCare · One Platform. Every Good Cause.
+          {tr('OmanCare · One Platform. Every Good Cause.', 'عُمان كير · منصة واحدة لكل عمل خيري.')}
         </p>
       </div>
     </div>

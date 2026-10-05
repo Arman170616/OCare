@@ -76,5 +76,5 @@ export function RadiusMap({ lat, lng, radiusKm, label }: RadiusMapProps) {
     fitRef.current();
   }, [lat, lng, radiusKm, label]);
 
-  return <div ref={containerRef} className="h-full w-full" />;
+  return <div ref={containerRef} dir="ltr" className="h-full w-full" />;
 }

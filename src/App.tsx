@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, Fragment, type ReactNode } from 'react';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { Header, type View } from '@/components/Header';
 import { AuthScreen } from '@/components/AuthScreen';
@@ -12,10 +12,26 @@ import { ProjectDetailModal } from '@/components/ProjectDetailModal';
 import { DonationFlow } from '@/components/DonationFlow';
 import type { ProjectWithDistance } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
+import { getLang, onLangChange, tr } from '@/lib/i18n';
 
 function AppContent() {
   const { profile, loading } = useAuth();
-  const [view, setView] = useState<View>('home');
+  // Remembered for the tab session so a language switch (which remounts the app) keeps the page.
+  const [view, setViewState] = useState<View>(() => {
+    try {
+      return (sessionStorage.getItem('omancare-view') as View) || 'home';
+    } catch {
+      return 'home';
+    }
+  });
+  const setView = useCallback((next: View) => {
+    setViewState(next);
+    try {
+      sessionStorage.setItem('omancare-view', next);
+    } catch {
+      // ignore unavailable storage
+    }
+  }, []);
   const [initialCategory, setInitialCategory] = useState<string | null>(null);
   const [donateProject, setDonateProject] = useState<ProjectWithDistance | null>(null);
   const [detailProject, setDetailProject] = useState<ProjectWithDistance | null>(null);
@@ -45,7 +61,7 @@ function AppContent() {
   const handleDonated = useCallback(() => {
     setView('impact');
     setTimeout(() => setView('explore'), 50);
-  }, []);
+  }, [setView]);
 
   if (loading) {
     return (
@@ -111,17 +127,26 @@ function AppContent() {
       )}
 
       <footer className="mx-auto max-w-7xl border-t border-slate-200 px-4 py-6 text-center text-xs text-slate-500">
-        OmanCare — One Platform. Every Good Cause.
+        {tr('OmanCare — One Platform. Every Good Cause.', 'عُمان كير — منصة واحدة لكل عمل خيري.')}
       </footer>
     </div>
   );
 }
 
+/** Re-renders the whole tree when the language changes so every tr() call picks it up. */
+function LanguageRoot({ children }: { children: ReactNode }) {
+  const [lang, setLangState] = useState(getLang());
+  useEffect(() => onLangChange(setLangState), []);
+  return <Fragment key={lang}>{children}</Fragment>;
+}
+
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <LanguageRoot>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </LanguageRoot>
   );
 }
 

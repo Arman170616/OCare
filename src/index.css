@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
     background: #f8fafc;
     min-height: 100vh;
     color: #1e293b;
@@ -12,6 +12,12 @@
 
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Arabic script reads better with the Arabic face first and a touch more line height. */
+  html[lang='ar'] body {
+    font-family: 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif;
+    line-height: 1.6;
   }
 }
 
@@ -235,6 +241,10 @@
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
+}
+
+[dir='rtl'] .draw-line {
+  transform-origin: right;
 }
 
 .reveal-visible .draw-line {

@@ -3,11 +3,17 @@ import type { Profile } from './auth-types';
 // Demo accounts live in localStorage until the app has a real auth backend.
 const USERS_KEY = 'omancare-users';
 
+// Demo admin login. This ships in the browser bundle, so it is NOT a secret:
+// replace with server-side auth before real use.
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'adminpass';
+
 const DEFAULT_USERS = [
   {
     id: 'admin-demo',
+    username: 'admin',
     email: 'admin@omancare.com',
-    password: 'admin123',
+    password: ADMIN_PASSWORD,
     full_name: 'Platform Admin',
     role: 'admin',
     organization_name: null,
@@ -26,19 +32,36 @@ const DEFAULT_USERS = [
   },
 ] as const;
 
-export function getStoredUsers() {
+function readUsers() {
   const raw = localStorage.getItem(USERS_KEY);
-  if (!raw) {
-    localStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
-    return [...DEFAULT_USERS];
-  }
-
+  if (!raw) return [...DEFAULT_USERS];
   try {
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) && parsed.length > 0 ? parsed : [...DEFAULT_USERS];
   } catch {
     return [...DEFAULT_USERS];
   }
+}
+
+export function getStoredUsers() {
+  const users = readUsers();
+  // Keep the built-in admin's login current, including in browsers that saved older demo data.
+  const hasAdmin = users.some((u) => u.id === 'admin-demo');
+  const synced = hasAdmin
+    ? users.map((u) => (u.id === 'admin-demo' ? { ...u, username: ADMIN_USERNAME, password: ADMIN_PASSWORD } : u))
+    : [DEFAULT_USERS[0], ...users];
+  localStorage.setItem(USERS_KEY, JSON.stringify(synced));
+  return synced;
+}
+
+/** Find an account by email or username plus password. */
+export function findUserByLogin(login: string, password: string) {
+  const needle = login.trim().toLowerCase();
+  return getStoredUsers().find(
+    (user) =>
+      user.password === password &&
+      (user.email?.toLowerCase() === needle || user.username?.toLowerCase() === needle)
+  );
 }
 
 export function writeStoredUsers(users: Array<Record<string, any>>) {

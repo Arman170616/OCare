@@ -4,6 +4,7 @@ import { formatOMR } from '@/lib/utils';
 import { Droplets, Heart, ArrowRight, MapPin, BadgeCheck, TrendingUp, Building2, Landmark } from 'lucide-react';
 import { HeroVisual } from '@/components/HeroVisual';
 import { Reveal, CountUp } from '@/components/Motion';
+import { tr } from '@/lib/i18n';
 
 interface HomeViewProps {
   onExplore: () => void;
@@ -23,15 +24,18 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
             style={{ animationDelay: '0ms' }}
           >
             <MapPin className="h-3.5 w-3.5" />
-            Location-aware charity in Oman
+            {tr('Location-aware charity in Oman', 'عمل خيري حسب موقعك في عُمان')}
           </div>
           <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
-            <span className="hero-in inline-block" style={{ animationDelay: '80ms' }}>Find a Need.</span>{' '}
-            <span className="hero-in inline-block text-teal-600" style={{ animationDelay: '200ms' }}>Choose a Place.</span>{' '}
-            <span className="hero-in inline-block" style={{ animationDelay: '320ms' }}>Make an Impact.</span>
+            <span className="hero-in inline-block" style={{ animationDelay: '80ms' }}>{tr('Find a Need.', 'اكتشف حاجة.')}</span>{' '}
+            <span className="hero-in inline-block text-teal-600" style={{ animationDelay: '200ms' }}>{tr('Choose a Place.', 'اختر مكانًا.')}</span>{' '}
+            <span className="hero-in inline-block" style={{ animationDelay: '320ms' }}>{tr('Make an Impact.', 'اصنع أثرًا.')}</span>
           </h1>
           <p className="hero-in mt-4 max-w-xl text-base leading-relaxed text-slate-600" style={{ animationDelay: '440ms' }}>
-            Discover verified mosques and hospitals near you that need support, and follow your donation until it is delivered.
+            {tr(
+              'Discover verified mosques and hospitals near you that need support, and follow your donation until it is delivered.',
+              'اكتشف المساجد والمستشفيات الموثقة القريبة منك التي تحتاج إلى الدعم، وتابع تبرعك حتى يصل إلى وجهته.'
+            )}
           </p>
 
           <div className="hero-in mt-8 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: '560ms' }}>
@@ -40,15 +44,15 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
               className="group flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.98]"
             >
               <Droplets className="h-4 w-4 transition-transform group-hover:-rotate-12" />
-              Donate Water Now
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              {tr('Donate Water Now', 'تبرّع بالمياه الآن')}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1" />
             </button>
             <button
               onClick={onExplore}
               className="group flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 font-medium text-slate-700 transition-all hover:-translate-y-0.5 hover:border-teal-300 hover:bg-slate-50"
             >
               <MapPin className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
-              Help Near Me
+              {tr('Help Near Me', 'ساعد بالقرب مني')}
             </button>
           </div>
         </div>
@@ -60,15 +64,15 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
 
       <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { icon: Heart, label: 'Total Donations', value: <CountUp value={stats.totalDonations} />, color: 'bg-teal-50 text-teal-600' },
+          { icon: Heart, label: tr('Total Donations', 'إجمالي التبرعات'), value: <CountUp value={stats.totalDonations} />, color: 'bg-teal-50 text-teal-600' },
           {
             icon: TrendingUp,
-            label: 'Total Raised',
+            label: tr('Total Raised', 'إجمالي المبالغ المجمعة'),
             value: <CountUp value={stats.totalRaised} format={(n) => formatOMR(Math.round(n * 10) / 10)} />,
             color: 'bg-sky-50 text-sky-600',
           },
-          { icon: BadgeCheck, label: 'Active Projects', value: <CountUp value={stats.activeProjects} />, color: 'bg-amber-50 text-amber-600' },
-          { icon: Building2, label: 'Verified Facilities', value: <CountUp value={19} />, color: 'bg-rose-50 text-rose-600' },
+          { icon: BadgeCheck, label: tr('Active Projects', 'المشاريع النشطة'), value: <CountUp value={stats.activeProjects} />, color: 'bg-amber-50 text-amber-600' },
+          { icon: Building2, label: tr('Verified Facilities', 'المنشآت الموثقة'), value: <CountUp value={19} />, color: 'bg-rose-50 text-rose-600' },
         ].map((stat, i) => (
           <Reveal key={stat.label} delay={i * 90}>
             <StatCard icon={stat.icon} label={stat.label} value={stat.value} color={stat.color} />
@@ -85,7 +89,7 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
             <button
               key={cat.key}
               onClick={() => onCategorySelect(cat.key)}
-              className="glass-card group flex items-center gap-3 rounded-2xl p-4 text-left transition-all active:scale-[0.97]"
+              className="glass-card group flex items-center gap-3 rounded-2xl p-4 text-start transition-all active:scale-[0.97]"
             >
               <div
                 className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${cat.tint} transition-transform group-hover:scale-110`}
@@ -106,36 +110,36 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
 
       <Reveal className="mb-6">
         <div className="glass-card rounded-3xl p-6">
-          <h2 className="mb-5 text-lg font-semibold text-slate-900">How OmanCare Works</h2>
+          <h2 className="mb-5 text-lg font-semibold text-slate-900">{tr('How OmanCare Works', 'كيف تعمل عُمان كير')}</h2>
           <div className="relative grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="draw-line absolute left-4 right-[calc(25%-1rem)] top-4 hidden h-px bg-teal-200 lg:block" />
+            <div className="draw-line absolute start-4 end-[calc(25%-1rem)] top-4 hidden h-px bg-teal-200 lg:block" />
             <HowItWorksStep
               num="1"
               delay={0}
               icon={Heart}
-              title="Select Donation Type"
-              desc="Choose the cause you want to support — water, mosque care, or hospital care."
+              title={tr('Select Donation Type', 'اختر نوع التبرع')}
+              desc={tr('Choose the cause you want to support — water, mosque care, or hospital care.', 'اختر القضية التي تريد دعمها: المياه أو رعاية المساجد أو رعاية المستشفيات.')}
             />
             <HowItWorksStep
               num="2"
               delay={150}
               icon={MapPin}
-              title="Choose Your Location"
-              desc="Select your city or use your current location to find needs near you."
+              title={tr('Choose Your Location', 'اختر موقعك')}
+              desc={tr('Select your city or use your current location to find needs near you.', 'اختر مدينتك أو استخدم موقعك الحالي للعثور على الاحتياجات القريبة منك.')}
             />
             <HowItWorksStep
               num="3"
               delay={300}
               icon={BadgeCheck}
-              title="Find Verified Facilities"
-              desc="Browse verified mosques and hospitals in your area, then pick the one that matches your support."
+              title={tr('Find Verified Facilities', 'اعثر على منشآت موثقة')}
+              desc={tr('Browse verified mosques and hospitals in your area, then pick the one that matches your support.', 'تصفح المساجد والمستشفيات الموثقة في منطقتك، ثم اختر ما يناسب دعمك.')}
             />
             <HowItWorksStep
               num="4"
               delay={450}
               icon={TrendingUp}
-              title="Donate & Track Impact"
-              desc="Donate with confidence and monitor delivery status from received to on the way to delivered."
+              title={tr('Donate & Track Impact', 'تبرّع وتابع أثرك')}
+              desc={tr('Donate with confidence and monitor delivery status from received to on the way to delivered.', 'تبرّع بثقة وتابع حالة التوصيل من الاستلام إلى الطريق حتى التسليم.')}
             />
           </div>
         </div>
@@ -145,8 +149,8 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
         <Reveal delay={0}>
           <FeatureCard
             icon={Droplets}
-            title="Water for Verified Facilities"
-            desc="Support water needs at trusted mosques and hospitals in your area."
+            title={tr('Water for Verified Facilities', 'مياه للمنشآت الموثقة')}
+            desc={tr('Support water needs at trusted mosques and hospitals in your area.', 'ادعم احتياجات المياه في المساجد والمستشفيات الموثوقة في منطقتك.')}
             tint="bg-sky-50 text-sky-600"
             onClick={() => onCategorySelect('water')}
           />
@@ -154,8 +158,8 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
         <Reveal delay={100}>
           <FeatureCard
             icon={Landmark}
-            title="Mosque Support"
-            desc="Help verified mosques with sanitation, water access, and essential needs."
+            title={tr('Mosque Support', 'دعم المساجد')}
+            desc={tr('Help verified mosques with sanitation, water access, and essential needs.', 'ساعد المساجد الموثقة في النظافة وتوفير المياه والاحتياجات الأساسية.')}
             tint="bg-teal-50 text-teal-600"
             onClick={() => onCategorySelect('mosque')}
           />
@@ -163,8 +167,8 @@ export function HomeView({ onExplore, onCategorySelect, onDonateWater }: HomeVie
         <Reveal delay={200}>
           <FeatureCard
             icon={Building2}
-            title="Hospital Support"
-            desc="Find approved hospital projects that need your assistance and follow progress closely."
+            title={tr('Hospital Support', 'دعم المستشفيات')}
+            desc={tr('Find approved hospital projects that need your assistance and follow progress closely.', 'اعثر على مشاريع مستشفيات معتمدة تحتاج مساعدتك وتابع تقدمها عن قرب.')}
             tint="bg-rose-50 text-rose-600"
             onClick={() => onCategorySelect('hospital')}
           />
@@ -220,7 +224,7 @@ function HowItWorksStep({
         >
           <Icon className="h-4 w-4" />
         </span>
-        <span className="relative bg-white pr-2 text-xs font-medium text-slate-400">Step {num}</span>
+        <span className="relative bg-white pe-2 text-xs font-medium text-slate-400">{tr(`Step ${num}`, `الخطوة ${num}`)}</span>
       </div>
       <h3 className="mb-1 text-sm font-semibold text-slate-900">{title}</h3>
       <p className="text-xs leading-relaxed text-slate-500">{desc}</p>
@@ -244,7 +248,7 @@ function FeatureCard({
   return (
     <button
       onClick={onClick}
-      className="glass-card lift group flex h-full w-full flex-col items-start rounded-2xl p-5 text-left hover:border-teal-300 active:scale-[0.98]"
+      className="glass-card lift group flex h-full w-full flex-col items-start rounded-2xl p-5 text-start hover:border-teal-300 active:scale-[0.98]"
     >
       <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110 ${tint}`}>
         <Icon className="h-5 w-5" />
@@ -252,8 +256,8 @@ function FeatureCard({
       <h3 className="mb-1 text-base font-semibold text-slate-900">{title}</h3>
       <p className="text-xs leading-relaxed text-slate-600">{desc}</p>
       <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-teal-600">
-        Explore
-        <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+        {tr('Explore', 'استكشف')}
+        <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1" />
       </div>
     </button>
   );

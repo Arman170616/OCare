@@ -1,4 +1,5 @@
-import { MapPin, Heart, LayoutGrid, BarChart3, Sparkles, Shield, Building2, LogOut, ChevronDown } from 'lucide-react';
+import { Heart, LayoutGrid, BarChart3, Sparkles, Shield, Building2, LogOut, ChevronDown, Languages } from 'lucide-react';
+import { tr, getLang, setLang } from '@/lib/i18n';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import type { Profile } from '@/lib/auth-types';
@@ -26,15 +27,15 @@ export function Header({ activeView, onNavigate }: HeaderProps) {
   }, []);
 
   const navItems: { key: View; label: string; icon: typeof LayoutGrid }[] = [
-    { key: 'home', label: 'Home', icon: LayoutGrid },
-    { key: 'explore', label: 'Help Near Me', icon: Heart },
-    { key: 'impact', label: 'My Impact', icon: BarChart3 },
+    { key: 'home', label: tr('Home', 'الرئيسية'), icon: LayoutGrid },
+    { key: 'explore', label: tr('Help Near Me', 'ساعد بالقرب مني'), icon: Heart },
+    { key: 'impact', label: tr('My Impact', 'أثري'), icon: BarChart3 },
   ];
 
   if (profile?.role === 'admin') {
-    navItems.push({ key: 'admin', label: 'Admin Panel', icon: Shield });
+    navItems.push({ key: 'admin', label: tr('Admin Panel', 'لوحة الإدارة'), icon: Shield });
   } else if (profile?.role === 'organization') {
-    navItems.push({ key: 'organization', label: 'My Facilities', icon: Building2 });
+    navItems.push({ key: 'organization', label: tr('My Facilities', 'منشآتي'), icon: Building2 });
   }
 
   const roleBadge = profile ? getRoleBadge(profile) : null;
@@ -46,15 +47,15 @@ export function Header({ activeView, onNavigate }: HeaderProps) {
         <div className="glass-card flex items-center justify-between rounded-2xl px-5 py-3">
           <button
             onClick={() => onNavigate('home')}
-            className="flex items-center gap-2.5 transition-transform hover:scale-[1.02]"
+            className="flex items-center gap-2.5 text-start transition-transform hover:scale-[1.02]"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white">
               <Sparkles className="h-5 w-5" />
             </div>
-            <div className="text-left">
-              <div className="text-lg font-bold tracking-tight text-slate-800">OmanCare</div>
+            <div>
+              <div className="text-lg font-bold tracking-tight text-slate-800">{tr('OmanCare', 'عُمان كير')}</div>
               <div className="text-[10px] font-medium uppercase tracking-wider text-slate-500">
-                Donate Where Help Is Needed
+                {tr('Donate Where Help Is Needed', 'تبرّع حيث تشتد الحاجة')}
               </div>
             </div>
           </button>
@@ -81,6 +82,14 @@ export function Header({ activeView, onNavigate }: HeaderProps) {
           </nav>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setLang(getLang() === 'ar' ? 'en' : 'ar')}
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+              title={tr('Switch to Arabic', 'التبديل إلى الإنجليزية')}
+            >
+              <Languages className="h-3.5 w-3.5" />
+              {getLang() === 'ar' ? 'English' : 'العربية'}
+            </button>
             {roleBadge && (
               <span className={`hidden items-center gap-1 rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide sm:flex ${roleBadge.className}`}>
                 {RoleIcon && <RoleIcon className="h-3 w-3" />}
@@ -100,9 +109,9 @@ export function Header({ activeView, onNavigate }: HeaderProps) {
               </button>
 
               {menuOpen && profile && (
-                <div className="absolute right-0 top-full mt-2 w-52 glass-card rounded-2xl p-2 shadow-xl">
+                <div className="absolute end-0 top-full mt-2 w-52 glass-card rounded-2xl p-2 shadow-xl">
                   <div className="border-b border-slate-200/60 px-3 py-2">
-                    <div className="text-sm font-bold text-slate-800">{profile.full_name || 'User'}</div>
+                    <div className="text-sm font-bold text-slate-800">{profile.full_name || tr('User', 'مستخدم')}</div>
                     <div className="truncate text-xs text-slate-500">{profile.email}</div>
                   </div>
                   <div className="py-1 sm:hidden">
@@ -131,7 +140,7 @@ export function Header({ activeView, onNavigate }: HeaderProps) {
                     className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
                   >
                     <LogOut className="h-4 w-4" />
-                    Sign Out
+                    {tr('Sign Out', 'تسجيل الخروج')}
                   </button>
                 </div>
               )}
@@ -168,10 +177,10 @@ export function Header({ activeView, onNavigate }: HeaderProps) {
 function getRoleBadge(profile: Profile) {
   switch (profile.role) {
     case 'admin':
-      return { label: 'Admin', icon: Shield, className: 'bg-red-50 text-red-600' };
+      return { label: tr('Admin', 'مدير'), icon: Shield, className: 'bg-red-50 text-red-600' };
     case 'organization':
-      return { label: 'Organization', icon: Building2, className: 'bg-sky-50 text-sky-600' };
+      return { label: tr('Organization', 'منظمة'), icon: Building2, className: 'bg-sky-50 text-sky-600' };
     default:
-      return { label: 'Donor', icon: Heart, className: 'bg-teal-50 text-teal-600' };
+      return { label: tr('Donor', 'متبرع'), icon: Heart, className: 'bg-teal-50 text-teal-600' };
   }
 }

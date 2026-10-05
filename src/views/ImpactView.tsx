@@ -3,8 +3,9 @@ import { useAuth } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
 import type { Donation, Project, Facility } from '@/lib/types';
 import { useImpactStats } from '@/lib/hooks';
-import { formatOMR } from '@/lib/utils';
-import { getCategoryInfo, DELIVERY_STEPS, deliveryStepIndex, type DeliveryStatus } from '@/lib/constants';
+import { formatOMR, facilityName } from '@/lib/utils';
+import { tr, locale } from '@/lib/i18n';
+import { getCategoryInfo, DELIVERY_STEPS, SPONSOR_FREQUENCIES, deliveryStepIndex, type DeliveryStatus } from '@/lib/constants';
 import {
   Droplets,
   Landmark,
@@ -71,63 +72,63 @@ export function ImpactView() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-800">My Impact</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-800">{tr('My Impact', 'أثري')}</h1>
         <p className="mt-1 text-sm text-slate-600">
-          Your charitable contributions through OmanCare — every donation making a difference.
+          {tr('Your charitable contributions through OmanCare — every donation making a difference.', 'مساهماتك الخيرية عبر عُمان كير — كل تبرع يصنع فرقًا.')}
         </p>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <ImpactStat
           icon={Heart}
-          label="Donations"
+          label={tr('Donations', 'التبرعات')}
           value={recentDonations.length.toString()}
           tint="bg-teal-50 text-teal-600"
         />
         <ImpactStat
           icon={Droplets}
-          label="Water Projects"
+          label={tr('Water Projects', 'مشاريع المياه')}
           value={(totals.byCategory['water'] ?? 0).toString()}
           tint="bg-sky-50 text-sky-600"
         />
         <ImpactStat
           icon={Landmark}
-          label="Mosques"
+          label={tr('Mosques', 'المساجد')}
           value={totals.mosques.toString()}
           tint="bg-teal-50 text-teal-600"
         />
         <ImpactStat
           icon={Building2}
-          label="Hospitals"
+          label={tr('Hospitals', 'المستشفيات')}
           value={totals.hospitals.toString()}
           tint="bg-rose-50 text-rose-600"
         />
         <ImpactStat
           icon={Repeat}
-          label="Sponsorships"
+          label={tr('Sponsorships', 'الكفالات')}
           value={totals.sponsorships.toString()}
           tint="bg-amber-50 text-amber-600"
         />
         <ImpactStat
           icon={TrendingUp}
-          label="Total Given"
+          label={tr('Total Given', 'إجمالي العطاء')}
           value={formatOMR(totals.total)}
           tint="bg-violet-50 text-violet-600"
         />
       </div>
 
       <div className="glass-card mb-6 rounded-2xl p-5">
-        <h2 className="mb-4 text-base font-bold text-slate-800">Platform Impact Summary</h2>
+        <h2 className="mb-4 text-base font-bold text-slate-800">{tr('Platform Impact Summary', 'ملخص أثر المنصة')}</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <SummaryStat label="Total Donations" value={stats.totalDonations.toString()} icon={Heart} />
-          <SummaryStat label="Total Raised" value={formatOMR(stats.totalRaised)} icon={TrendingUp} />
-          <SummaryStat label="Active Projects" value={stats.activeProjects.toString()} icon={Award} />
-          <SummaryStat label="Completed" value={stats.completedProjects.toString()} icon={CheckCircle2} />
+          <SummaryStat label={tr('Total Donations', 'إجمالي التبرعات')} value={stats.totalDonations.toString()} icon={Heart} />
+          <SummaryStat label={tr('Total Raised', 'إجمالي المبالغ المجمعة')} value={formatOMR(stats.totalRaised)} icon={TrendingUp} />
+          <SummaryStat label={tr('Active Projects', 'المشاريع النشطة')} value={stats.activeProjects.toString()} icon={Award} />
+          <SummaryStat label={tr('Completed', 'المكتملة')} value={stats.completedProjects.toString()} icon={CheckCircle2} />
         </div>
       </div>
 
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-slate-800">Recent Donations</h2>
+        <h2 className="text-lg font-bold text-slate-800">{tr('Recent Donations', 'أحدث التبرعات')}</h2>
         {recentDonations.length > 0 && (
           <span className="text-xs text-slate-500">{recentDonations.length} records</span>
         )}
@@ -135,17 +136,19 @@ export function ImpactView() {
 
       {loading ? (
         <div className="glass-card flex items-center justify-center rounded-2xl py-16">
-          <p className="text-sm text-slate-500">Loading donations...</p>
+          <p className="text-sm text-slate-500">{tr('Loading donations...', 'جارٍ تحميل التبرعات...')}</p>
         </div>
       ) : recentDonations.length === 0 ? (
         <div className="glass-card flex flex-col items-center justify-center rounded-2xl py-16 text-center">
           <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-teal-50">
             <Heart className="h-7 w-7 text-teal-400" />
           </div>
-          <h3 className="text-base font-bold text-slate-700">No donations yet</h3>
+          <h3 className="text-base font-bold text-slate-700">{tr('No donations yet', 'لا توجد تبرعات بعد')}</h3>
           <p className="mt-1 max-w-sm text-sm text-slate-500">
-            Your donations will appear here once you contribute to a project. Start by exploring
-            nearby needs!
+            {tr(
+              'Your donations will appear here once you contribute to a project. Start by exploring nearby needs!',
+              'ستظهر تبرعاتك هنا بعد مساهمتك في أحد المشاريع. ابدأ باستكشاف الاحتياجات القريبة!'
+            )}
           </p>
         </div>
       ) : (
@@ -174,16 +177,21 @@ export function ImpactView() {
       <div className="mt-6 glass-card rounded-2xl p-5">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-          <h2 className="text-base font-bold text-slate-800">Transparency & Trust</h2>
+          <h2 className="text-base font-bold text-slate-800">{tr('Transparency & Trust', 'الشفافية والثقة')}</h2>
         </div>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
-          Every donation through OmanCare is connected to a verified project at an approved
-          mosque, hospital, or community facility. The platform follows a strict verification
-          process — from organization verification to administrative approval — before any
-          project is available for public donations.
+          {tr(
+            'Every donation through OmanCare is connected to a verified project at an approved mosque, hospital, or community facility. The platform follows a strict verification process — from organization verification to administrative approval — before any project is available for public donations.',
+            'كل تبرع عبر عُمان كير مرتبط بمشروع موثق في مسجد أو مستشفى أو مرفق مجتمعي معتمد. وتتبع المنصة إجراءات تحقق صارمة — من توثيق المنظمة إلى الاعتماد الإداري — قبل إتاحة أي مشروع للتبرعات العامة.'
+          )}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {['Organization Verified', 'Location Verified', 'Project Approved', 'Impact Tracked'].map(
+          {[
+            tr('Organization Verified', 'منظمة موثقة'),
+            tr('Location Verified', 'موقع موثق'),
+            tr('Project Approved', 'مشروع معتمد'),
+            tr('Impact Tracked', 'أثر متتبَّع'),
+          ].map(
             (tag) => (
               <span
                 key={tag}
@@ -226,30 +234,30 @@ function DonationCard({
           <CatIcon className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-bold text-slate-800">
-            {donation.project?.title ?? 'Project'}
+          <div dir="auto" className="truncate text-sm font-bold text-slate-800">
+            {donation.project?.title ?? tr('Project', 'مشروع')}
           </div>
           <div className="truncate text-xs text-slate-500">
-            {donation.project?.facility?.name ?? 'Facility'}
+            {facilityName(donation.project?.facility) || tr('Facility', 'منشأة')}
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] text-slate-400">
             <span className="flex items-center gap-0.5">
               <Calendar className="h-3 w-3" />
-              {new Date(donation.created_at).toLocaleDateString()}
+              {new Date(donation.created_at).toLocaleDateString(locale())}
             </span>
             <span className="flex items-center gap-0.5">
               <Receipt className="h-3 w-3" />
               {donation.receipt_number}
             </span>
-            {donation.recurring && (
+            {Boolean(donation.recurring) && (
               <span className="flex items-center gap-0.5 text-amber-600">
                 <Repeat className="h-3 w-3" />
-                {donation.frequency}
+                {SPONSOR_FREQUENCIES.find((f) => f.key === donation.frequency)?.label ?? donation.frequency}
               </span>
             )}
           </div>
         </div>
-        <div className="shrink-0 text-right">
+        <div className="shrink-0 text-end">
           <div className="text-sm font-bold text-teal-600">
             {formatOMR(donation.amount)}
           </div>
@@ -261,7 +269,7 @@ function DonationCard({
         onClick={() => setExpanded((v) => !v)}
         className="mt-3 flex w-full items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100"
       >
-        <span>Track Donation</span>
+        <span>{tr('Track Donation', 'تتبّع التبرع')}</span>
         {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </button>
 
@@ -279,7 +287,7 @@ function DeliveryBadge({ status }: { status: DeliveryStatus }) {
     on_the_way: 'bg-violet-50 text-violet-600',
     delivered: 'bg-emerald-50 text-emerald-600',
   };
-  const label = DELIVERY_STEPS.find((s) => s.key === status)?.label ?? 'Received';
+  const label = DELIVERY_STEPS.find((s) => s.key === status)?.label ?? tr('Received', 'تم الاستلام');
   return (
     <span className={`mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[9px] font-semibold ${styles[status]}`}>
       {label}
@@ -319,8 +327,8 @@ function DeliveryTimeline({ currentStepIdx, updatedAt }: { currentStepIdx: numbe
                 {step.label}
               </span>
               {active && updatedAt && (
-                <span className="ml-2 text-[9px] text-slate-400">
-                  {new Date(updatedAt).toLocaleDateString()}
+                <span className="ms-2 text-[9px] text-slate-400">
+                  {new Date(updatedAt).toLocaleDateString(locale())}
                 </span>
               )}
             </div>

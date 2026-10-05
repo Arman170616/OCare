@@ -709,12 +709,7 @@ def get_donations(user_id: str | None = None) -> List[Dict[str, Any]]:
             for row in rows:
                 donation = dict(row)
                 project_row = conn.execute(
-                    """
-                    SELECT p.*, f.*
-                    FROM projects p
-                    LEFT JOIN facilities f ON f.id = p.facility_id
-                    WHERE p.id = ?
-                    """,
+                    PROJECT_SELECT_SQL + " WHERE p.id = ?",
                     (donation["project_id"],),
                 ).fetchone()
                 if project_row:
@@ -792,12 +787,7 @@ def get_donation(donation_id: str) -> Dict[str, Any]:
 
         # Get associated project info
         project_row = conn.execute(
-            """
-            SELECT p.*, f.*
-            FROM projects p
-            LEFT JOIN facilities f ON f.id = p.facility_id
-            WHERE p.id = ?
-            """,
+            PROJECT_SELECT_SQL + " WHERE p.id = ?",
             (donation["project_id"],),
         ).fetchone()
 

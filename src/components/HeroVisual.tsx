@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { DELIVERY_STEPS } from '@/lib/constants';
 import { Droplets, Heart, Landmark } from 'lucide-react';
+import { tr, isRtl } from '@/lib/i18n';
+import { formatOMR, placeName } from '@/lib/utils';
 
 // Simple equirectangular projection of Oman into a 0–100 box (x scaled by cos ~21°N).
 const BOUNDS = { west: 51.8, east: 60.1, north: 26.6, south: 16.4 };
@@ -71,14 +73,15 @@ export function HeroVisual() {
   const current = DELIVERY_STEPS[step];
   const StepIcon = current.icon;
   const primary = PINS.find((p) => p.primary)!;
+  const textDir = isRtl() ? 'rtl' : 'ltr';
 
   return (
-    <div className="hero-visual relative h-96 overflow-hidden rounded-3xl border border-slate-200 bg-white sm:h-[26rem]" aria-hidden="true">
+    <div dir="ltr" className="hero-visual relative h-96 overflow-hidden rounded-3xl border border-slate-200 bg-white sm:h-[26rem]" aria-hidden="true">
       <span className="absolute bottom-24 right-6 text-[10px] font-medium uppercase tracking-[0.2em] text-sky-300 sm:bottom-auto sm:right-auto sm:left-[46%] sm:top-[62%]">
-        Arabian Sea
+        {tr('Arabian Sea', 'بحر العرب')}
       </span>
       <span className="absolute left-[44%] top-[9%] hidden text-[10px] font-medium uppercase tracking-[0.2em] text-sky-300 sm:block">
-        Gulf of Oman
+        {tr('Gulf of Oman', 'خليج عُمان')}
       </span>
 
       <div
@@ -139,7 +142,7 @@ export function HeroVisual() {
                 pin.primary ? 'left-full ml-1.5 text-teal-700' : 'right-full mr-1.5 text-slate-500'
               }`}
             >
-              {pin.name}
+              {placeName(pin.name)}
             </span>
           </div>
         ))}
@@ -149,24 +152,24 @@ export function HeroVisual() {
         </div>
       </div>
 
-      <div className="hero-float absolute right-4 top-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+      <div dir={textDir} className="hero-float absolute right-4 top-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-50 text-rose-500">
           <Heart className="h-3.5 w-3.5" />
         </span>
         <div className="text-[11px] leading-tight">
-          <div className="font-semibold text-slate-800">+ OMR 10 donated</div>
-          <div className="text-slate-400">just now · Muscat</div>
+          <div className="font-semibold text-slate-800">{tr(`+ ${formatOMR(10)} donated`, `تبرع جديد بقيمة ${formatOMR(10)}`)}</div>
+          <div className="text-slate-400">{tr('just now · Muscat', 'الآن · مسقط')}</div>
         </div>
       </div>
 
-      <div className="hero-float-slow absolute bottom-4 right-4 w-56 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:w-72">
+      <div dir={textDir} className="hero-float-slow absolute bottom-4 right-4 w-56 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:w-72">
         <div className="mb-3 flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
             <Droplets className="h-4 w-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-xs font-semibold text-slate-800">Water Tank Support</div>
-            <div className="truncate text-[11px] text-slate-500">Al Rahman Mosque · 1.1 km</div>
+            <div className="truncate text-xs font-semibold text-slate-800">{tr('Water Tank Support', 'دعم خزان المياه')}</div>
+            <div className="truncate text-[11px] text-slate-500">{tr('Al Rahman Mosque · 1.1 km', 'مسجد الرحمن · 1.1 كم')}</div>
           </div>
         </div>
 

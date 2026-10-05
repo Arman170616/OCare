@@ -1,4 +1,5 @@
 import { getProgressPercent, getRemainingAmount, formatOMR } from '@/lib/utils';
+import { tr } from '@/lib/i18n';
 
 interface ProgressBarProps {
   project: { target_amount: number; collected_amount: number };
@@ -14,7 +15,7 @@ export function ProgressBar({ project, showLabels = true }: ProgressBarProps) {
       {showLabels && (
         <div className="mb-1.5 flex items-center justify-between text-xs">
           <span className="font-semibold text-slate-700">
-            {formatOMR(project.collected_amount)} raised
+            {tr(`${formatOMR(project.collected_amount)} raised`, `تم جمع ${formatOMR(project.collected_amount)}`)}
           </span>
           <span className="text-slate-500">{percent}%</span>
         </div>
@@ -27,7 +28,10 @@ export function ProgressBar({ project, showLabels = true }: ProgressBarProps) {
       </div>
       {showLabels && (
         <div className="mt-1 text-xs text-slate-500">
-          {formatOMR(remaining)} remaining of {formatOMR(project.target_amount)}
+          {tr(
+            `${formatOMR(remaining)} remaining of ${formatOMR(project.target_amount)}`,
+            `متبقٍ ${formatOMR(remaining)} من ${formatOMR(project.target_amount)}`
+          )}
         </div>
       )}
     </div>

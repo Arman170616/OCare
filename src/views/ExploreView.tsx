@@ -8,7 +8,9 @@ import {
   sortProjectsByRemaining,
   sortProjectsByNeed,
   isWithinServiceArea,
+  placeName,
 } from '@/lib/utils';
+import { tr } from '@/lib/i18n';
 import { CATEGORIES, getCategoryInfo } from '@/lib/constants';
 import { ProjectCard } from '@/components/ProjectCard';
 import { MapView } from '@/components/MapView';
@@ -105,7 +107,7 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
     setLocating(true);
     setLocationError('');
     if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by your browser.');
+      setLocationError(tr('Geolocation is not supported by your browser.', 'متصفحك لا يدعم تحديد الموقع.'));
       setLocating(false);
       return;
     }
@@ -119,8 +121,8 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
       (err) => {
         setLocationError(
           err.code === 1
-            ? 'Location permission denied. Select a city manually.'
-            : 'Could not get your location. Please select a city.'
+            ? tr('Location permission denied. Select a city manually.', 'تم رفض إذن الموقع. اختر مدينة يدويًا.')
+            : tr('Could not get your location. Please select a city.', 'تعذر تحديد موقعك. يرجى اختيار مدينة.')
         );
         setLocating(false);
       },
@@ -128,25 +130,34 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
     );
   };
 
+  const countLabel =
+    sortedProjects.length === 1
+      ? tr('1 verified project', 'مشروع موثق واحد')
+      : tr(`${sortedProjects.length} verified projects`, `${sortedProjects.length} مشاريع موثقة`);
+  const nearestKm = sortedProjects.length ? Math.min(...sortedProjects.map((p) => p.distance)).toFixed(1) : '0';
+
   const mapCenterLat = userLocation?.lat ?? selectedCity?.lat ?? 23.588;
   const mapCenterLng = userLocation?.lng ?? selectedCity?.lng ?? 58.3829;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
       <div className="mb-5">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-800">Help Near Me</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-800">{tr('Help Near Me', 'ساعد بالقرب مني')}</h1>
         <p className="mt-1 text-sm text-slate-600">
-          Select a donation type, choose a location, and find verified mosques or hospitals near you.
+          {tr(
+            'Select a donation type, choose a location, and find verified mosques or hospitals near you.',
+            'اختر نوع التبرع والموقع، واعثر على مساجد أو مستشفيات موثقة بالقرب منك.'
+          )}
         </p>
       </div>
 
       <div className="glass-card mb-4 rounded-2xl p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="flex-1">
-            <label className="mb-1.5 block text-xs font-semibold text-slate-600">Select your city</label>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-600">{tr('Select your city', 'اختر مدينتك')}</label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <MapPin className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <select
                   value={userLocation ? NEAR_ME : selectedCity?.id ?? ''}
                   onChange={(e) => {
@@ -158,13 +169,13 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
                     setSelectedCity(city ?? null);
                     setUserLocation(null);
                   }}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-2.5 ps-10 pe-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 >
-                  <option value={NEAR_ME}>Near me (current location)</option>
-                  <option value="">All cities in Oman</option>
+                  <option value={NEAR_ME}>{tr('Near me (current location)', 'بالقرب مني (موقعي الحالي)')}</option>
+                  <option value="">{tr('All cities in Oman', 'جميع مدن عُمان')}</option>
                   {cities.map((city) => (
                     <option key={city.id} value={city.id}>
-                      {city.name} — {city.governorate}
+                      {placeName(city.name)} — {placeName(city.governorate)}
                     </option>
                   ))}
                 </select>
@@ -175,14 +186,14 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
                 className={`flex shrink-0 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all disabled:opacity-50 ${
                   userLocation ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-teal-50 text-teal-700 hover:bg-teal-100'
                 }`}
-                title="Use my current location"
+                title={tr('Use my current location', 'استخدم موقعي الحالي')}
               >
                 {locating ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Navigation className="h-4 w-4" />
                 )}
-                <span className="hidden sm:inline">Near Me</span>
+                <span className="hidden sm:inline">{tr('Near Me', 'بالقرب مني')}</span>
               </button>
             </div>
             {locationError && (
@@ -194,20 +205,20 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
           </div>
 
           <div className="flex-1">
-            <label className="mb-1.5 block text-xs font-semibold text-slate-600">Search</label>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-600">{tr('Search', 'بحث')}</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Mosque, hospital, area, project..."
-                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-9 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                placeholder={tr('Mosque, hospital, area, project...', 'مسجد، مستشفى، منطقة، مشروع...')}
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 ps-10 pe-9 text-sm text-slate-700 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute end-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -219,7 +230,7 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
 
       <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
         <CategoryChip
-          label="All"
+          label={tr('All', 'الكل')}
           active={!selectedCategory}
           onClick={() => setSelectedCategory(null)}
         />
@@ -250,7 +261,7 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
               })()}
               <button
                 onClick={() => setSelectedCategory(null)}
-                className="ml-1 rounded-full p-0.5 hover:bg-teal-100"
+                className="ms-1 rounded-full p-0.5 hover:bg-teal-100"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -266,7 +277,7 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
                 viewMode === 'list' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500'
               }`}
             >
-              <ListIcon className="h-3.5 w-3.5" /> List
+              <ListIcon className="h-3.5 w-3.5" /> {tr('List', 'قائمة')}
             </button>
             <button
               onClick={() => {
@@ -277,22 +288,22 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
                 viewMode === 'map' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500'
               }`}
             >
-              <MapIcon className="h-3.5 w-3.5" /> Map
+              <MapIcon className="h-3.5 w-3.5" /> {tr('Map', 'خريطة')}
             </button>
           </div>
 
           {viewMode === 'list' && (
             <div className="relative">
-              <SlidersHorizontal className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+              <SlidersHorizontal className="absolute start-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
               <select
                 value={sortMode}
                 onChange={(e) => setSortMode(e.target.value as SortMode)}
-                className="appearance-none rounded-xl border border-slate-200 bg-white py-2 pl-8 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-teal-400"
+                className="appearance-none rounded-xl border border-slate-200 bg-white py-2 ps-8 pe-8 text-xs font-medium text-slate-700 outline-none focus:border-teal-400"
               >
-                <option value="distance">Nearest</option>
-                <option value="urgency">Most Urgent</option>
-                <option value="need">Highest Need</option>
-                <option value="remaining">Most Remaining</option>
+                <option value="distance">{tr('Nearest', 'الأقرب')}</option>
+                <option value="urgency">{tr('Most Urgent', 'الأكثر إلحاحًا')}</option>
+                <option value="need">{tr('Highest Need', 'الأعلى احتياجًا')}</option>
+                <option value="remaining">{tr('Most Remaining', 'الأكثر حاجة للتمويل')}</option>
               </select>
             </div>
           )}
@@ -302,16 +313,16 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
       {loading || citiesLoading ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
-          <p className="mt-3 text-sm text-slate-500">Loading nearby needs...</p>
+          <p className="mt-3 text-sm text-slate-500">{tr('Loading nearby needs...', 'جارٍ تحميل الاحتياجات القريبة...')}</p>
         </div>
       ) : error || citiesError ? (
         <div className="glass-card flex flex-col items-center justify-center rounded-2xl py-16 text-center">
           <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
             <AlertCircle className="h-7 w-7 text-amber-600" />
           </div>
-          <h3 className="text-base font-bold text-slate-700">Unable to load nearby needs</h3>
+          <h3 className="text-base font-bold text-slate-700">{tr('Unable to load nearby needs', 'تعذر تحميل الاحتياجات القريبة')}</h3>
           <p className="mt-1 max-w-sm text-sm text-slate-500">
-            {error ?? citiesError ?? 'Please check your connection or try again in a moment.'}
+            {error ?? citiesError ?? tr('Please check your connection or try again in a moment.', 'تحقق من اتصالك أو حاول مرة أخرى بعد قليل.')}
           </p>
         </div>
       ) : sortedProjects.length === 0 ? (
@@ -319,13 +330,16 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
           <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
             <Search className="h-7 w-7 text-slate-400" />
           </div>
-          <h3 className="text-base font-bold text-slate-700">No projects found</h3>
+          <h3 className="text-base font-bold text-slate-700">{tr('No projects found', 'لا توجد مشاريع')}</h3>
           <p className="mt-1 max-w-sm text-sm text-slate-500">
             {outOfAreaCount > 0
-              ? `${outOfAreaCount} ${outOfAreaCount === 1 ? 'post serves' : 'posts serve'} other areas but not your current location. Pick a city to browse them.`
+              ? tr(
+                  `${outOfAreaCount} ${outOfAreaCount === 1 ? 'post serves' : 'posts serve'} other areas but not your current location. Pick a city to browse them.`,
+                  `${outOfAreaCount} ${outOfAreaCount === 1 ? 'منشور يخدم' : 'منشورات تخدم'} مناطق أخرى غير موقعك الحالي. اختر مدينة لتصفحها.`
+                )
               : selectedCategory || selectedCity || searchQuery
-              ? 'Try adjusting your filters — select a different category, city, or search term.'
-              : 'Select a category or city to find nearby verified needs.'}
+              ? tr('Try adjusting your filters — select a different category, city, or search term.', 'جرّب تعديل عوامل التصفية: اختر فئة أو مدينة أو كلمة بحث مختلفة.')
+              : tr('Select a category or city to find nearby verified needs.', 'اختر فئة أو مدينة للعثور على احتياجات موثقة قريبة.')}
           </p>
         </div>
       ) : viewMode === 'map' ? (
@@ -342,19 +356,21 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
           </div>
           <div className="border-t border-slate-200/60 px-4 py-2.5 text-xs text-slate-500">
             {userLocation
-              ? `Showing your location · nearest project ${Math.min(...sortedProjects.map((p) => p.distance)).toFixed(1)} km away · ${sortedProjects.length} verified ${sortedProjects.length === 1 ? 'project' : 'projects'} in total`
-              : `${sortedProjects.length} verified ${sortedProjects.length === 1 ? 'project' : 'projects'} on the map`}
+              ? tr(
+                  `Showing your location · nearest project ${nearestKm} km away · ${countLabel} in total`,
+                  `يتم عرض موقعك · أقرب مشروع على بعد ${nearestKm} كم · ${countLabel} إجمالًا`
+                )
+              : tr(`${countLabel} on the map`, `${countLabel} على الخريطة`)}
           </div>
         </div>
       ) : (
         <div>
           <div className="mb-3 text-sm text-slate-600">
-            <span className="font-bold text-slate-800">{sortedProjects.length}</span>{' '}
-            verified {sortedProjects.length === 1 ? 'project' : 'projects'}{' '}
-            {(userLocation || selectedCity) && 'near you'}
+            <span className="font-semibold text-slate-800">{countLabel}</span>{' '}
+            {(userLocation || selectedCity) && tr('near you', 'بالقرب منك')}
             {outOfAreaCount > 0 && (
-              <span className="ml-1 text-slate-400">
-                · {outOfAreaCount} outside your area hidden
+              <span className="ms-1 text-slate-400">
+                · {tr(`${outOfAreaCount} outside your area hidden`, `تم إخفاء ${outOfAreaCount} خارج منطقتك`)}
               </span>
             )}
           </div>
@@ -363,7 +379,7 @@ export function ExploreView({ initialCategory, onDonate, onViewDetails }: Explor
             {['mosque', 'hospital'].map((type) => {
               const group = groupedByType[type];
               if (!group || group.length === 0) return null;
-              const label = type === 'mosque' ? 'Nearby Mosques' : 'Nearby Hospitals';
+              const label = type === 'mosque' ? tr('Nearby Mosques', 'المساجد القريبة') : tr('Nearby Hospitals', 'المستشفيات القريبة');
               return (
                 <div key={type}>
                   <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-slate-800">

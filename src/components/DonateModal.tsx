@@ -3,7 +3,8 @@ import type { ProjectWithDistance } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
 import { DONATION_PRESETS, SPONSOR_PRESETS, SPONSOR_FREQUENCIES, getCategoryInfo } from '@/lib/constants';
-import { formatOMR, getRemainingAmount, facilityTypeLabel, resolveAmount, isValidAmount } from '@/lib/utils';
+import { formatOMR, getRemainingAmount, facilityTypeLabel, resolveAmount, isValidAmount, facilityName, formatKm } from '@/lib/utils';
+import { tr } from '@/lib/i18n';
 import { ProgressBar } from './ProgressBar';
 import { Heart, CheckCircle2, Calendar, Repeat } from 'lucide-react';
 import {
@@ -48,12 +49,13 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
   const remaining = getRemainingAmount(project);
 
   const finalAmount = resolveAmount(amount, customAmount);
+  const frequencyLabel = SPONSOR_FREQUENCIES.find((f) => f.key === frequency)?.label ?? frequency;
 
   const handleSubmit = async () => {
     setError('');
 
     if (!isValidAmount(finalAmount)) {
-      setError('Please enter a valid donation amount.');
+      setError(tr('Please enter a valid donation amount.', 'يرجى إدخال مبلغ تبرع صحيح.'));
       return;
     }
 
@@ -86,7 +88,7 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
       setSuccess(true);
     } catch (err) {
       console.error('Donation failed:', err);
-      const message = err instanceof Error && err.message ? err.message : 'Donation failed. Please try again.';
+      const message = err instanceof Error && err.message ? err.message : tr('Donation failed. Please try again.', 'فشل التبرع. يرجى المحاولة مرة أخرى.');
       setError(message);
     } finally {
       setSubmitting(false);
@@ -112,27 +114,27 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
             <CheckCircle2 className="h-8 w-8 text-emerald-600" />
           </div>
-          <h2 className="mb-1 text-xl font-bold text-slate-800">Donation Successful!</h2>
+          <h2 className="mb-1 text-xl font-bold text-slate-800">{tr('Donation Successful!', 'تم التبرع بنجاح!')}</h2>
           <p className="mb-4 text-sm text-slate-600">
-            Thank you for your contribution to {project.title}.
+            {tr(`Thank you for your contribution to ${project.title}.`, `شكرًا لمساهمتك في ${project.title}.`)}
           </p>
-          <div className="glass-card mb-6 w-full rounded-xl p-4 text-left">
+          <div className="glass-card mb-6 w-full rounded-xl p-4 text-start">
             <div className="flex justify-between py-1 text-sm">
-              <span className="text-slate-500">Amount</span>
+              <span className="text-slate-500">{tr('Amount', 'المبلغ')}</span>
               <span className="font-bold text-slate-800">{formatOMR(finalAmount)}</span>
             </div>
             <div className="flex justify-between py-1 text-sm">
-              <span className="text-slate-500">Receipt No.</span>
+              <span className="text-slate-500">{tr('Receipt No.', 'رقم الإيصال')}</span>
               <span className="font-mono font-semibold text-slate-700">{receiptNo}</span>
             </div>
             <div className="flex justify-between py-1 text-sm">
-              <span className="text-slate-500">Facility</span>
-              <span className="font-medium text-slate-700">{facility?.name}</span>
+              <span className="text-slate-500">{tr('Facility', 'المنشأة')}</span>
+              <span className="font-medium text-slate-700">{facilityName(facility)}</span>
             </div>
             <div className="flex justify-between py-1 text-sm">
-              <span className="text-slate-500">Type</span>
+              <span className="text-slate-500">{tr('Type', 'النوع')}</span>
               <span className="font-medium text-slate-700">
-                {mode === 'sponsor' ? `Sponsor (${frequency})` : 'One-time'}
+                {mode === 'sponsor' ? `${tr('Sponsor', 'كفالة')} (${frequencyLabel})` : tr('One-time', 'مرة واحدة')}
               </span>
             </div>
           </div>
@@ -143,7 +145,7 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
             onClick={handleClose}
             className="w-full rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white transition-all active:scale-95"
           >
-            Done
+            {tr('Done', 'تم')}
           </button>
         </div>
       </ModalShell>
@@ -160,8 +162,8 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
             <cat.icon className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="truncate text-base font-bold text-slate-800">Donate to this project</h2>
-            <p className="truncate text-xs text-slate-500">{project.title}</p>
+            <h2 className="truncate text-base font-bold text-slate-800">{tr('Donate to this project', 'تبرّع لهذا المشروع')}</h2>
+            <p dir="auto" className="truncate text-xs text-slate-500">{project.title}</p>
           </div>
         </div>
         <div className="mt-3">
@@ -172,11 +174,11 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
       <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
         {facility && (
           <div className="mb-4 flex items-center gap-2 rounded-xl bg-teal-50/70 px-3 py-2 text-xs text-teal-700">
-            <span className="font-semibold">{facility.name}</span>
+            <span className="font-semibold">{facilityName(facility)}</span>
             <span>·</span>
             <span>{facilityTypeLabel(facility.type)}</span>
             <span>·</span>
-            <span>{project.distance.toFixed(1)} km</span>
+            <span>{formatKm(project.distance)}</span>
           </div>
         )}
 
@@ -194,7 +196,7 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
             }`}
           >
             <Heart className="h-4 w-4" />
-            One-time
+            {tr('One-time', 'مرة واحدة')}
           </button>
           <button
             onClick={() => {
@@ -209,7 +211,7 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
             }`}
           >
             <Repeat className="h-4 w-4" />
-            Sponsor Water
+            {tr('Sponsor Water', 'كفالة مياه')}
           </button>
         </div>
 
@@ -217,7 +219,7 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
           <div className="mb-4">
             <label className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-600">
               <Calendar className="h-3.5 w-3.5" />
-              Frequency
+              {tr('Frequency', 'التكرار')}
             </label>
             <div className="grid grid-cols-4 gap-2">
               {SPONSOR_FREQUENCIES.map((freq) => (
@@ -238,7 +240,14 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
         )}
 
         <AmountPicker
-          label={`Choose amount${mode === 'sponsor' ? ` (per ${frequency === 'weekly' ? 'week' : frequency === 'monthly' ? 'month' : 'payment'})` : ''}`}
+          label={
+            mode === 'sponsor'
+              ? tr(
+                  `Choose amount (per ${frequency === 'weekly' ? 'week' : frequency === 'monthly' ? 'month' : 'payment'})`,
+                  `اختر المبلغ (${frequency === 'weekly' ? 'أسبوعيًا' : frequency === 'monthly' ? 'شهريًا' : 'لكل دفعة'})`
+                )
+              : tr('Choose amount', 'اختر المبلغ')
+          }
           presets={mode === 'one-time' ? DONATION_PRESETS : SPONSOR_PRESETS}
           amount={amount}
           customAmount={customAmount}
@@ -263,8 +272,8 @@ export function DonateModal({ project, onClose, onDonated }: DonateModalProps) {
 
         <p className="mt-3 text-center text-[10px] text-slate-400">
           {remaining > 0
-            ? `${formatOMR(remaining)} still needed for this project`
-            : 'This project has reached its funding goal!'}
+            ? tr(`${formatOMR(remaining)} still needed for this project`, `لا يزال المشروع بحاجة إلى ${formatOMR(remaining)}`)
+            : tr('This project has reached its funding goal!', 'حقق هذا المشروع هدف التمويل!')}
         </p>
       </div>
     </ModalShell>
